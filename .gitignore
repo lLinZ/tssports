@@ -1,0 +1,10 @@
+# Carpeta interna de Claude Code / preview local
+.claude/
+
+# Dependencias y sistema
+node_modules/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TS Sports · Panel de administración</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ===== Login ===== -->
+  <section class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <div class="brand brand-login">
+        <span class="brand-mark">TS</span><span class="brand-name">Sports</span>
+      </div>
+      <h1>Panel de administración</h1>
+      <p class="login-sub">Inicia sesión para editar el contenido del sitio.</p>
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input type="email" id="loginEmail" required autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="loginPass">Contraseña</label>
+        <input type="password" id="loginPass" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      <p class="login-status" id="loginStatus" role="status"></p>
+      <p class="login-mode" id="loginMode"></p>
+    </form>
+  </section>
+
+  <!-- ===== Panel ===== -->
+  <div class="admin-app" id="adminApp" hidden>
+    <header class="admin-top">
+      <div class="brand"><span class="brand-mark">TS</span><span class="brand-name">Sports</span><span class="admin-badge">CRM</span></div>
+      <div class="admin-top-actions">
+        <span class="admin-mode-tag" id="modeTag"></span>
+        <a href="index.html" target="_blank" class="btn btn-ghost btn-sm">Ver sitio ↗</a>
+        <button class="btn btn-primary btn-sm" id="saveBtn">Guardar cambios</button>
+        <button class="btn btn-text" id="logoutBtn">Salir</button>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+      <nav class="admin-tabs" id="adminTabs">
+        <button class="tab active" data-tab="colors">🎨 Colores</button>
+        <button class="tab" data-tab="images">🖼️ Imágenes</button>
+        <button class="tab" data-tab="texts">📝 Textos</button>
+        <button class="tab" data-tab="services">⭐ Servicios</button>
+        <button class="tab" data-tab="projects">📁 Proyectos</button>
+        <button class="tab" data-tab="allies">🤝 Aliados</button>
+        <button class="tab" data-tab="contact">✉️ Contacto</button>
+      </nav>
+
+      <main class="admin-main">
+        <section class="panel active" id="panel-colors"></section>
+        <section class="panel" id="panel-images"></section>
+        <section class="panel" id="panel-texts"></section>
+        <section class="panel" id="panel-services"></section>
+        <section class="panel" id="panel-projects"></section>
+        <section class="panel" id="panel-allies"></section>
+        <section class="panel" id="panel-contact"></section>
+      </main>
+    </div>
+
+    <div class="save-toast" id="saveToast"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="content-defaults.js"></script>
+  <script src="store.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

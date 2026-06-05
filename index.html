@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TS Sports | Marketing & Consultoría Deportiva</title>
+  <meta name="description" content="TS Sports — Agencia independiente de consultoría estratégica especializada en marketing deportivo, patrocinios, eventos y eSports." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header class="site-header" id="top">
+    <div class="container nav-wrap">
+      <a href="#top" class="brand">
+        <span class="brand-mark">TS</span>
+        <span class="brand-name">Sports</span>
+      </a>
+
+      <nav class="nav" id="nav">
+        <a href="#nosotros" data-i18n="nav.about">Nosotros</a>
+        <a href="#servicios" data-i18n="nav.services">Servicios</a>
+        <a href="#proyectos" data-i18n="nav.projects">Proyectos</a>
+        <a href="#aliados" data-i18n="nav.clients">Aliados</a>
+        <a href="#contacto" data-i18n="nav.contact">Contacto</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="lang-toggle" id="langToggle" aria-label="Cambiar idioma">
+          <span class="lang-opt active" data-lang="es">ES</span>
+          <span class="lang-sep">/</span>
+          <span class="lang-opt" data-lang="en">EN</span>
+        </button>
+        <button class="menu-btn" id="menuBtn" aria-label="Menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container hero-inner">
+      <p class="eyebrow" data-i18n="hero.eyebrow">CONSULTORÍA ESTRATÉGICA DEPORTIVA</p>
+      <h1 class="hero-title" data-i18n="hero.title">El deporte es nuestra pasión.<br />La innovación, nuestro talento.</h1>
+      <p class="hero-sub" data-i18n="hero.sub">Diseñamos y ejecutamos estrategias de marketing, patrocinios y eventos que conectan marcas con la emoción del deporte.</p>
+      <div class="hero-cta">
+        <a href="#servicios" class="btn btn-primary" data-i18n="hero.cta1">Nuestros servicios</a>
+        <a href="#contacto" class="btn btn-ghost" data-i18n="hero.cta2">Hablemos</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Stats ===== -->
+  <section class="stats">
+    <div class="container stats-grid">
+      <div class="stat"><span class="stat-num" data-i18n="stat.n1">20+</span><span class="stat-label" data-i18n="stats.years">Años de experiencia</span></div>
+      <div class="stat"><span class="stat-num" data-i18n="stat.n2">17+</span><span class="stat-label" data-i18n="stats.brands">Marcas aliadas</span></div>
+      <div class="stat"><span class="stat-num" data-i18n="stat.n3">6</span><span class="stat-label" data-i18n="stats.areas">Áreas de servicio</span></div>
+      <div class="stat"><span class="stat-num" data-i18n="stat.n4">100%</span><span class="stat-label" data-i18n="stats.passion">Pasión por el deporte</span></div>
+    </div>
+  </section>
+
+  <!-- ===== Nosotros ===== -->
+  <section class="section" id="nosotros">
+    <div class="container two-col">
+      <div class="col-text">
+        <p class="section-eyebrow" data-i18n="about.eyebrow">QUIÉNES SOMOS</p>
+        <h2 class="section-title" data-i18n="about.title">Más de 20 años convirtiendo el deporte en oportunidades de negocio</h2>
+        <p class="lead" data-i18n="about.p1">Somos una agencia independiente de consultoría estratégica. Nuestro equipo multidisciplinario combina experiencia en educación, ventas, marketing, comunicación y medios para crear soluciones a la medida.</p>
+        <p data-i18n="about.p2">Acompañamos a marcas, ligas, clubes y propiedades deportivas en cada etapa: desde la estrategia y la activación, hasta la medición de resultados. Innovación, datos y creatividad en cada proyecto.</p>
+      </div>
+      <div class="col-card">
+        <ul class="value-list">
+          <li><strong data-i18n="about.v1t">Estrategia</strong><span data-i18n="about.v1d">Planes basados en datos y objetivos claros.</span></li>
+          <li><strong data-i18n="about.v2t">Creatividad</strong><span data-i18n="about.v2d">Ideas que generan conversación y comunidad.</span></li>
+          <li><strong data-i18n="about.v3t">Ejecución</strong><span data-i18n="about.v3d">Operación impecable de principio a fin.</span></li>
+          <li><strong data-i18n="about.v4t">Resultados</strong><span data-i18n="about.v4d">Medición de ROI y mejora continua.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Servicios ===== -->
+  <section class="section section-alt" id="servicios">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-eyebrow" data-i18n="serv.eyebrow">NUESTROS SERVICIOS</p>
+        <h2 class="section-title" data-i18n="serv.title">Soluciones integrales para el negocio del deporte</h2>
+      </div>
+      <div class="services-grid" id="servicesGrid"><!-- render.js --></div>
+    </div>
+  </section>
+
+  <!-- ===== Proyectos ===== -->
+  <section class="section" id="proyectos">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-eyebrow" data-i18n="proj.eyebrow">NUESTRO TRABAJO</p>
+        <h2 class="section-title" data-i18n="proj.title">Proyectos que dejan huella</h2>
+      </div>
+      <div class="projects-grid" id="projectsGrid"><!-- render.js --></div>
+
+      <blockquote class="testimonial">
+        <p data-i18n="proj.quote">“Un equipo que entiende el negocio del deporte y lo ejecuta con pasión. Resultados claros y una relación de confianza.”</p>
+        <cite data-i18n="proj.quoteby">— Dirección, organización deportiva aliada</cite>
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- ===== Aliados ===== -->
+  <section class="section section-alt" id="aliados">
+    <div class="container">
+      <div class="section-head">
+        <p class="section-eyebrow" data-i18n="ally.eyebrow">NUESTROS ALIADOS</p>
+        <h2 class="section-title" data-i18n="ally.title">Marcas que confían en nosotros</h2>
+      </div>
+      <div class="logos-grid" id="logosGrid"><!-- render.js --></div>
+    </div>
+  </section>
+
+  <!-- ===== Contacto ===== -->
+  <section class="section" id="contacto">
+    <div class="container two-col contact-col">
+      <div class="col-text">
+        <p class="section-eyebrow" data-i18n="contact.eyebrow">CONTACTO</p>
+        <h2 class="section-title" data-i18n="contact.title">¿Listo para llevar tu marca al siguiente nivel?</h2>
+        <p class="lead" data-i18n="contact.p1">Cuéntanos sobre tu proyecto y diseñaremos una estrategia a tu medida.</p>
+        <ul class="contact-info">
+          <li><span class="ci-label" data-i18n="contact.email">Email</span><a id="contactEmail" href="mailto:info@tssports.com">info@tssports.com</a></li>
+          <li><span class="ci-label" data-i18n="contact.social">Redes</span><a id="contactInstagram" href="#" target="_blank" rel="noopener">Instagram</a> · <a id="contactLinkedin" href="#" target="_blank" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+      <form class="contact-form" id="contactForm" novalidate>
+        <div class="field">
+          <label for="name" data-i18n="form.name">Nombre</label>
+          <input type="text" id="name" name="name" required />
+        </div>
+        <div class="field">
+          <label for="email" data-i18n="form.email">Email</label>
+          <input type="email" id="email" name="email" required />
+        </div>
+        <div class="field">
+          <label for="message" data-i18n="form.message">Mensaje</label>
+          <textarea id="message" name="message" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" data-i18n="form.send">Enviar mensaje</button>
+        <p class="form-status" id="formStatus" role="status"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a href="#top" class="brand brand-footer">
+        <span class="brand-mark">TS</span><span class="brand-name">Sports</span>
+      </a>
+      <p class="footer-tag" data-i18n="footer.tag">Marketing & consultoría deportiva.</p>
+      <p class="footer-copy">© <span id="year"></span> TS Sports. <span data-i18n="footer.rights">Todos los derechos reservados.</span></p>
+    </div>
+  </footer>
+
+  <!-- CRM: Supabase + capa de datos + render dinámico -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="content-defaults.js"></script>
+  <script src="store.js"></script>
+  <script src="render.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
