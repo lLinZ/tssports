@@ -219,6 +219,7 @@
       `<h2>Contacto</h2><p class="panel-desc">Datos de contacto y redes sociales.</p>
       <div class="card">
         <div class="field"><label>Email</label><input type="email" value="${escAttr(c.email)}" data-scope="contact" data-key="email"></div>
+        <div class="field"><label>WhatsApp (con código de país)</label><input type="text" value="${escAttr(c.whatsapp)}" data-scope="contact" data-key="whatsapp" placeholder="+57 320 4325231"></div>
         <div class="field"><label>Instagram (URL)</label><input type="url" value="${escAttr(c.instagram)}" data-scope="contact" data-key="instagram"></div>
         <div class="field"><label>LinkedIn (URL)</label><input type="url" value="${escAttr(c.linkedin)}" data-scope="contact" data-key="linkedin"></div>
       </div>`;

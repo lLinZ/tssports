@@ -25,6 +25,7 @@ window.TS_DEFAULTS = {
   // --- Contacto ---
   contact: {
     email: "info@tssports.com",
+    whatsapp: "+57 320 4325231",
     instagram: "#",
     linkedin: "#"
   },
@@ -71,6 +72,7 @@ window.TS_DEFAULTS = {
       "contact.p1": "Cuéntanos sobre tu proyecto y diseñaremos una estrategia a tu medida.",
       "contact.email": "Email",
       "contact.social": "Redes",
+      "contact.wa": "Escríbenos por WhatsApp",
       "form.name": "Nombre",
       "form.email": "Email",
       "form.message": "Mensaje",
@@ -118,6 +120,7 @@ window.TS_DEFAULTS = {
       "contact.p1": "Tell us about your project and we'll design a strategy tailored to you.",
       "contact.email": "Email",
       "contact.social": "Social",
+      "contact.wa": "Message us on WhatsApp",
       "form.name": "Name",
       "form.email": "Email",
       "form.message": "Message",

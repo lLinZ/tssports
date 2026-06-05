@@ -65,6 +65,17 @@
     if (ig) ig.href = ct.instagram || "#";
     const li = $("#contactLinkedin");
     if (li) li.href = ct.linkedin || "#";
+    const wa = $("#contactWhatsapp");
+    if (wa) {
+      const digits = (ct.whatsapp || "").replace(/\D/g, "");
+      if (digits) {
+        const msg = encodeURIComponent("Hola TS Sports, me gustaría más información.");
+        wa.href = "https://wa.me/" + digits + "?text=" + msg;
+        wa.style.display = "";
+      } else {
+        wa.style.display = "none";
+      }
+    }
   }
 
   // --- Textos fijos (data-i18n) ---

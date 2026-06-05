@@ -171,6 +171,10 @@ img { max-width: 100%; display: block; }
 .ci-label { font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .contact-info a { color: var(--accent); font-weight: 600; }
 
+.btn-whatsapp { margin-top: 22px; background: #25D366; color: #fff; gap: 10px; box-shadow: 0 8px 20px rgba(37,211,102,.35); }
+.btn-whatsapp:hover { background: #1ebe5b; box-shadow: 0 10px 26px rgba(37,211,102,.45); }
+.btn-whatsapp svg { flex: 0 0 auto; }
+
 .contact-form { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 30px; box-shadow: var(--shadow); }
 .field { margin-bottom: 18px; }
 .field label { display: block; font-size: .88rem; font-weight: 600; margin-bottom: 7px; }
