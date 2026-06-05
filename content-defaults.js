@@ -16,7 +16,8 @@ window.TS_DEFAULTS = {
 
   // --- Imágenes (URL; si está vacío se usa el degradado por defecto) ---
   images: {
-    hero: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",   // estadio lleno
+    hero: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",   // estadio lleno (respaldo / poster del video)
+    heroVideo: "https://videos.pexels.com/video-files/3192198/3192198-hd_1920_1080_25fps.mp4",                // video de fondo del hero (mp4 en bucle)
     about: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1100&q=80",   // entrenamiento / estrategia
     cta: "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1920&q=80"      // afición / emoción
   },

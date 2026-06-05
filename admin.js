@@ -111,11 +111,32 @@
     </div>`;
   }
 
+  function videoField(scope, url, label) {
+    const has = url && url.length;
+    const preview = has
+      ? `<video src="${escAttr(url)}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover;border-radius:10px"></video>`
+      : "Sin video";
+    return `<div class="field"><label>${label}</label>
+      <div class="img-preview" style="overflow:hidden;padding:0">${preview}</div>
+      <div class="img-actions">
+        <span class="btn btn-ghost btn-sm file-btn" style="color:var(--ink);border-color:var(--line)">Subir video
+          <input type="file" accept="video/*" data-img="1" data-scope="${scope}"></span>
+        ${has ? `<button class="remove-btn" data-action="clear-img" data-scope="${scope}">Quitar</button>` : ""}
+      </div>
+      <input type="url" placeholder="o pega una URL de video .mp4..." value="${has ? escAttr(url) : ""}" data-img-url="1" data-scope="${scope}" style="margin-top:8px">
+    </div>`;
+  }
+
   function renderImages() {
     const img = data.images || {};
     $("panel-images").innerHTML =
-      `<h2>Imágenes</h2><p class="panel-desc">Fotos de fondo del sitio. Recomendado: horizontales de buena calidad (1600×900px o más).</p>
-      <div class="card"><div class="card-head"><h3>Hero (portada)</h3></div>` + imageField("hero", null, img.hero || "", "Imagen de portada") + `</div>
+      `<h2>Imágenes y video</h2><p class="panel-desc">Fotos de fondo del sitio. Recomendado: horizontales de buena calidad (1600×900px o más).</p>
+      <div class="card"><div class="card-head"><h3>🎬 Video del hero (portada)</h3></div>
+        <p class="panel-desc" style="margin-bottom:14px">Video corto en bucle, sin sonido. Recomendado: MP4 horizontal, menos de 10&nbsp;MB. Si lo dejas vacío, se usa la foto del hero.</p>`
+        + videoField("heroVideo", img.heroVideo || "", "Video de portada (MP4)") + `</div>
+      <div class="card"><div class="card-head"><h3>Imagen del hero (respaldo)</h3></div>
+        <p class="panel-desc" style="margin-bottom:14px">Se muestra mientras carga el video, o si no hay video.</p>`
+        + imageField("hero", null, img.hero || "", "Imagen de portada") + `</div>
       <div class="card"><div class="card-head"><h3>Nosotros</h3></div>` + imageField("about", null, img.about || "", "Foto de la sección Nosotros") + `</div>
       <div class="card"><div class="card-head"><h3>Banda de impacto</h3></div>` + imageField("cta", null, img.cta || "", "Foto de la banda (CTA)") + `</div>`;
   }
@@ -205,7 +226,7 @@
 
   /* =================== EDICIÓN (delegación) =================== */
   function setImg(ds, url) {
-    if (ds.scope === "hero" || ds.scope === "about" || ds.scope === "cta") {
+    if (ds.scope === "hero" || ds.scope === "about" || ds.scope === "cta" || ds.scope === "heroVideo") {
       data.images = data.images || {};
       data.images[ds.scope] = url;
     }
@@ -251,7 +272,7 @@
       try {
         const url = await S.uploadImage(t.files[0]);
         setImg(ds, url);
-        if (ds.scope === "hero" || ds.scope === "about" || ds.scope === "cta") renderImages();
+        if (["hero","about","cta","heroVideo"].indexOf(ds.scope) !== -1) renderImages();
         else if (ds.scope === "project") renderProjects();
         else if (ds.scope === "ally") renderAllies();
         toast("Imagen lista ✔");
@@ -276,7 +297,7 @@
       case "add-ally": data.allies.push({ name: "Marca", logo: "" }); renderAllies(); break;
       case "remove-ally": data.allies.splice(idx, 1); renderAllies(); break;
       case "clear-img": setImg(btn.dataset, "");
-        if (["hero","about","cta"].indexOf(btn.dataset.scope) !== -1) renderImages();
+        if (["hero","about","cta","heroVideo"].indexOf(btn.dataset.scope) !== -1) renderImages();
         else if (btn.dataset.scope === "project") renderProjects();
         else if (btn.dataset.scope === "ally") renderAllies();
         break;

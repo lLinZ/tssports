@@ -31,6 +31,21 @@
       hero.style.backgroundSize = "cover";
       hero.style.backgroundPosition = "center";
     }
+    // Video de fondo del hero (si hay, cubre la foto; la foto queda de respaldo/poster)
+    const vid = $("#heroVideo");
+    if (vid) {
+      if (images.hero) vid.setAttribute("poster", images.hero);
+      if (images.heroVideo) {
+        if (vid.getAttribute("src") !== images.heroVideo) vid.src = images.heroVideo;
+        vid.classList.add("active");
+        const pr = vid.play();
+        if (pr && pr.catch) pr.catch(function () {});
+      } else {
+        vid.classList.remove("active");
+        vid.removeAttribute("src");
+        if (vid.load) vid.load();
+      }
+    }
     const about = $("#aboutPhoto");
     if (about && images.about) {
       about.style.backgroundImage = `url("${images.about}")`;
