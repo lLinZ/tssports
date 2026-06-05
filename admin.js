@@ -112,9 +112,12 @@
   }
 
   function renderImages() {
+    const img = data.images || {};
     $("panel-images").innerHTML =
-      `<h2>Imágenes</h2><p class="panel-desc">Imagen de fondo del hero (la portada). Recomendado: 1600×900px.</p>
-      <div class="card">` + imageField("hero", null, (data.images && data.images.hero) || "", "Imagen del hero") + `</div>`;
+      `<h2>Imágenes</h2><p class="panel-desc">Fotos de fondo del sitio. Recomendado: horizontales de buena calidad (1600×900px o más).</p>
+      <div class="card"><div class="card-head"><h3>Hero (portada)</h3></div>` + imageField("hero", null, img.hero || "", "Imagen de portada") + `</div>
+      <div class="card"><div class="card-head"><h3>Nosotros</h3></div>` + imageField("about", null, img.about || "", "Foto de la sección Nosotros") + `</div>
+      <div class="card"><div class="card-head"><h3>Banda de impacto</h3></div>` + imageField("cta", null, img.cta || "", "Foto de la banda (CTA)") + `</div>`;
   }
 
   function renderTexts() {
@@ -202,7 +205,10 @@
 
   /* =================== EDICIÓN (delegación) =================== */
   function setImg(ds, url) {
-    if (ds.scope === "hero") data.images.hero = url;
+    if (ds.scope === "hero" || ds.scope === "about" || ds.scope === "cta") {
+      data.images = data.images || {};
+      data.images[ds.scope] = url;
+    }
     else if (ds.scope === "project") data.projects[+ds.idx].image = url;
     else if (ds.scope === "ally") data.allies[+ds.idx].logo = url;
   }
@@ -245,7 +251,7 @@
       try {
         const url = await S.uploadImage(t.files[0]);
         setImg(ds, url);
-        if (ds.scope === "hero") renderImages();
+        if (ds.scope === "hero" || ds.scope === "about" || ds.scope === "cta") renderImages();
         else if (ds.scope === "project") renderProjects();
         else if (ds.scope === "ally") renderAllies();
         toast("Imagen lista ✔");
@@ -270,7 +276,7 @@
       case "add-ally": data.allies.push({ name: "Marca", logo: "" }); renderAllies(); break;
       case "remove-ally": data.allies.splice(idx, 1); renderAllies(); break;
       case "clear-img": setImg(btn.dataset, "");
-        if (btn.dataset.scope === "hero") renderImages();
+        if (["hero","about","cta"].indexOf(btn.dataset.scope) !== -1) renderImages();
         else if (btn.dataset.scope === "project") renderProjects();
         else if (btn.dataset.scope === "ally") renderAllies();
         break;

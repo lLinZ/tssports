@@ -42,16 +42,18 @@
 
   <!-- ===== Hero ===== -->
   <section class="hero">
-    <div class="hero-bg"></div>
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-overlay"></div>
     <div class="container hero-inner">
-      <p class="eyebrow" data-i18n="hero.eyebrow">CONSULTORÍA ESTRATÉGICA DEPORTIVA</p>
-      <h1 class="hero-title" data-i18n="hero.title">El deporte es nuestra pasión.<br />La innovación, nuestro talento.</h1>
-      <p class="hero-sub" data-i18n="hero.sub">Diseñamos y ejecutamos estrategias de marketing, patrocinios y eventos que conectan marcas con la emoción del deporte.</p>
-      <div class="hero-cta">
+      <p class="eyebrow reveal" data-i18n="hero.eyebrow">CONSULTORÍA ESTRATÉGICA DEPORTIVA</p>
+      <h1 class="hero-title reveal" data-i18n="hero.title">El deporte es nuestra pasión.<br />La innovación, nuestro talento.</h1>
+      <p class="hero-sub reveal" data-i18n="hero.sub">Diseñamos y ejecutamos estrategias de marketing, patrocinios y eventos que conectan marcas con la emoción del deporte.</p>
+      <div class="hero-cta reveal">
         <a href="#servicios" class="btn btn-primary" data-i18n="hero.cta1">Nuestros servicios</a>
         <a href="#contacto" class="btn btn-ghost" data-i18n="hero.cta2">Hablemos</a>
       </div>
     </div>
+    <a href="#nosotros" class="scroll-cue" aria-label="Bajar"><span></span></a>
   </section>
 
   <!-- ===== Stats ===== -->
@@ -66,14 +68,15 @@
 
   <!-- ===== Nosotros ===== -->
   <section class="section" id="nosotros">
-    <div class="container two-col">
-      <div class="col-text">
+    <div class="container about-grid">
+      <div class="about-photo" id="aboutPhoto">
+        <div class="about-photo-badge"><span class="ap-num" data-i18n="stat.n1">20+</span><span data-i18n="stats.years">Años de experiencia</span></div>
+      </div>
+      <div class="about-content">
         <p class="section-eyebrow" data-i18n="about.eyebrow">QUIÉNES SOMOS</p>
         <h2 class="section-title" data-i18n="about.title">Más de 20 años convirtiendo el deporte en oportunidades de negocio</h2>
         <p class="lead" data-i18n="about.p1">Somos una agencia independiente de consultoría estratégica. Nuestro equipo multidisciplinario combina experiencia en educación, ventas, marketing, comunicación y medios para crear soluciones a la medida.</p>
         <p data-i18n="about.p2">Acompañamos a marcas, ligas, clubes y propiedades deportivas en cada etapa: desde la estrategia y la activación, hasta la medición de resultados. Innovación, datos y creatividad en cada proyecto.</p>
-      </div>
-      <div class="col-card">
         <ul class="value-list">
           <li><strong data-i18n="about.v1t">Estrategia</strong><span data-i18n="about.v1d">Planes basados en datos y objetivos claros.</span></li>
           <li><strong data-i18n="about.v2t">Creatividad</strong><span data-i18n="about.v2d">Ideas que generan conversación y comunidad.</span></li>
@@ -92,6 +95,17 @@
         <h2 class="section-title" data-i18n="serv.title">Soluciones integrales para el negocio del deporte</h2>
       </div>
       <div class="services-grid" id="servicesGrid"><!-- render.js --></div>
+    </div>
+  </section>
+
+  <!-- ===== Banda de impacto (CTA) ===== -->
+  <section class="cta-band">
+    <div class="cta-band-bg" id="ctaBg"></div>
+    <div class="cta-band-overlay"></div>
+    <div class="container cta-band-inner">
+      <h2 class="cta-band-title" data-i18n="band.title">Convertimos la pasión por el deporte en resultados de negocio</h2>
+      <p class="cta-band-text" data-i18n="band.text">Estrategia, creatividad y ejecución para marcas que quieren jugar en las grandes ligas.</p>
+      <a href="#contacto" class="btn btn-primary" data-i18n="band.cta">Comencemos</a>
     </div>
   </section>
 
@@ -118,7 +132,9 @@
         <p class="section-eyebrow" data-i18n="ally.eyebrow">NUESTROS ALIADOS</p>
         <h2 class="section-title" data-i18n="ally.title">Marcas que confían en nosotros</h2>
       </div>
-      <div class="logos-grid" id="logosGrid"><!-- render.js --></div>
+      <div class="logos-marquee">
+        <div class="logos-track" id="logosGrid"><!-- render.js --></div>
+      </div>
     </div>
   </section>
 

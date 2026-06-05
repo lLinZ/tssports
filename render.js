@@ -22,17 +22,22 @@
     if (c.bgAlt) root.setProperty("--bg-alt", c.bgAlt);
   }
 
-  // --- Imagen del hero ---
-  function applyHero(images) {
-    const bg = $(".hero-bg");
-    if (!bg) return;
-    if (images && images.hero) {
-      bg.style.backgroundImage =
-        `linear-gradient(160deg, rgba(10,31,60,.78), rgba(13,43,82,.82)), url("${images.hero}")`;
-      bg.style.backgroundSize = "cover";
-      bg.style.backgroundPosition = "center";
-    } else {
-      bg.style.backgroundImage = "";
+  // --- Imágenes de fondo (hero, nosotros, banda CTA) ---
+  function applyImages(images) {
+    images = images || {};
+    const hero = $("#heroBg");
+    if (hero && images.hero) {
+      hero.style.backgroundImage = `url("${images.hero}")`;
+      hero.style.backgroundSize = "cover";
+      hero.style.backgroundPosition = "center";
+    }
+    const about = $("#aboutPhoto");
+    if (about && images.about) {
+      about.style.backgroundImage = `url("${images.about}")`;
+    }
+    const cta = $("#ctaBg");
+    if (cta && images.cta) {
+      cta.style.backgroundImage = `url("${images.cta}")`;
     }
   }
 
@@ -76,7 +81,7 @@
     if (!grid) return;
     grid.innerHTML = (CONTENT.projects || []).map((p) => {
       const t = p[lang] || p.es || {};
-      const bg = p.image ? `url("${p.image}")` : (p.gradient || "linear-gradient(135deg,#0d3b66,#1b6ca8)");
+      const bg = p.image ? `url('${esc(p.image)}')` : (p.gradient || "linear-gradient(135deg,#0d3b66,#1b6ca8)");
       const cover = p.image ? "background-size:cover;background-position:center;" : "";
       return `<article class="project-card">
         <div class="project-img" style="background-image:${bg};${cover}"></div>
@@ -89,30 +94,78 @@
     }).join("");
   }
 
-  // --- Aliados (independiente del idioma) ---
+  // --- Aliados (marquesina infinita; se duplica para el loop) ---
   function renderAllies() {
     const grid = $("#logosGrid");
     if (!grid) return;
-    grid.innerHTML = (CONTENT.allies || []).map((a) => {
-      if (a.logo) return `<div class="logo-box"><img src="${esc(a.logo)}" alt="${esc(a.name)}" style="max-height:54px;max-width:80%;object-fit:contain" /></div>`;
-      return `<div class="logo-box">${esc(a.name)}</div>`;
-    }).join("");
+    const one = (a) => a.logo
+      ? `<div class="logo-box"><img src="${esc(a.logo)}" alt="${esc(a.name)}" style="max-height:54px;max-width:80%;object-fit:contain" /></div>`
+      : `<div class="logo-box">${esc(a.name)}</div>`;
+    const items = (CONTENT.allies || []).map(one).join("");
+    // Duplicado para que el desplazamiento sea continuo (translateX -50%)
+    grid.innerHTML = items + items;
   }
 
   // --- Animación de aparición (después de renderizar) ---
   function initReveal() {
     const els = document.querySelectorAll(
-      ".section-head, .col-text, .col-card, .service-card, .project-card, .testimonial, .logo-box, .contact-form, .stat"
+      ".section-head, .about-photo, .about-content, .service-card, .project-card, .testimonial, .contact-form, .stat, .cta-band-inner"
     );
-    els.forEach((el) => el.classList.add("reveal"));
+    els.forEach((el) => { if (!el.classList.contains("reveal")) el.classList.add("reveal"); });
+    const all = document.querySelectorAll(".reveal");
     if ("IntersectionObserver" in window) {
       const io = new IntersectionObserver((entries) => {
         entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("visible"); io.unobserve(e.target); } });
       }, { threshold: 0.12 });
-      els.forEach((el) => io.observe(el));
+      all.forEach((el) => io.observe(el));
     } else {
-      els.forEach((el) => el.classList.add("visible"));
+      all.forEach((el) => el.classList.add("visible"));
     }
+  }
+
+  // --- Contadores que suben al entrar en pantalla ---
+  function setupCounters() {
+    const nums = document.querySelectorAll(".stat-num, .ap-num");
+    const run = (el) => {
+      const raw = (el.textContent || "").trim();
+      const m = raw.match(/^([\d.,]+)(.*)$/);
+      if (!m) return;
+      const target = parseFloat(m[1].replace(/,/g, ""));
+      const suffix = m[2] || "";
+      if (isNaN(target)) return;
+      const dur = 1300, t0 = performance.now();
+      const step = (t) => {
+        const p = Math.min((t - t0) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(target * eased) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) { run(e.target); io.unobserve(e.target); } });
+    }, { threshold: 0.6 });
+    nums.forEach((n) => io.observe(n));
+  }
+
+  // --- Parallax suave en la banda de impacto ---
+  function initParallax() {
+    const band = document.querySelector(".cta-band");
+    const bg = $("#ctaBg");
+    if (!band || !bg) return;
+    let ticking = false;
+    const update = () => {
+      const rect = band.getBoundingClientRect();
+      if (rect.bottom > 0 && rect.top < window.innerHeight) {
+        bg.style.transform = "translateY(" + (rect.top * 0.12) + "px)";
+      }
+      ticking = false;
+    };
+    window.addEventListener("scroll", () => {
+      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+    update();
   }
 
   // --- Idioma ---
@@ -140,11 +193,13 @@
     CONTENT = await window.TS_STORE.loadContent();
     window.__TS_CONTENT = CONTENT; // por si se necesita inspeccionar
     applyColors(CONTENT.colors);
-    applyHero(CONTENT.images);
+    applyImages(CONTENT.images);
     applyContact(CONTENT.contact);
     renderAllies();
     setLang(detectLang());
     initReveal();
+    setupCounters();
+    initParallax();
   }
 
   window.TS_RENDER = { setLang: () => setLang(LANG === "es" ? "en" : "es") };

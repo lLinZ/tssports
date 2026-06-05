@@ -27,19 +27,25 @@
     sb = window.supabase.createClient(CFG.url, CFG.anonKey);
   }
 
-  // Mezcla superficial profunda: defaults <- guardado (para no perder claves nuevas)
+  // Mezcla profunda: defaults <- guardado.
+  // - Objetos: se combinan recursivamente (las claves nuevas del diseño se conservan).
+  // - Arreglos: se combinan por índice (un elemento guardado hereda campos nuevos del default,
+  //   p.ej. la foto de un proyecto que antes no existía).
+  // - Hojas: un valor vacío ("") o ausente usa el valor por defecto.
   function merge(base, over) {
-    if (Array.isArray(over)) return over.slice();
-    if (over && typeof over === "object") {
-      const out = Array.isArray(base) ? [] : Object.assign({}, base);
-      Object.keys(over).forEach((k) => {
-        out[k] = (base && typeof base[k] === "object" && base[k] !== null && !Array.isArray(base[k]))
-          ? merge(base[k], over[k])
-          : over[k];
-      });
+    if (over === undefined || over === null) return base;
+    if (Array.isArray(base) && Array.isArray(over)) {
+      return over.map((item, i) => merge(base[i], item));
+    }
+    if (base && typeof base === "object" && !Array.isArray(base) &&
+        over && typeof over === "object" && !Array.isArray(over)) {
+      const out = Object.assign({}, base);
+      Object.keys(over).forEach((k) => { out[k] = merge(base[k], over[k]); });
       return out;
     }
-    return over === undefined ? base : over;
+    // Hoja: cadena vacía cae al valor por defecto (si existe)
+    if (over === "" && base !== undefined && base !== "") return base;
+    return over;
   }
 
   function withDefaults(saved) {

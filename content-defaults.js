@@ -16,7 +16,9 @@ window.TS_DEFAULTS = {
 
   // --- Imágenes (URL; si está vacío se usa el degradado por defecto) ---
   images: {
-    hero: ""             // imagen de fondo del hero (opcional)
+    hero: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80",   // estadio lleno
+    about: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=1100&q=80",   // entrenamiento / estrategia
+    cta: "https://images.unsplash.com/photo-1471295253337-3ceaaedca402?auto=format&fit=crop&w=1920&q=80"      // afición / emoción
   },
 
   // --- Contacto ---
@@ -54,6 +56,9 @@ window.TS_DEFAULTS = {
       "about.v4t": "Resultados", "about.v4d": "Medición de ROI y mejora continua.",
       "serv.eyebrow": "NUESTROS SERVICIOS",
       "serv.title": "Soluciones integrales para el negocio del deporte",
+      "band.title": "Convertimos la pasión por el deporte en resultados de negocio",
+      "band.text": "Estrategia, creatividad y ejecución para marcas que quieren jugar en las grandes ligas.",
+      "band.cta": "Comencemos",
       "proj.eyebrow": "NUESTRO TRABAJO",
       "proj.title": "Proyectos que dejan huella",
       "proj.quote": "“Un equipo que entiende el negocio del deporte y lo ejecuta con pasión. Resultados claros y una relación de confianza.”",
@@ -98,6 +103,9 @@ window.TS_DEFAULTS = {
       "about.v4t": "Results", "about.v4d": "ROI measurement and continuous improvement.",
       "serv.eyebrow": "OUR SERVICES",
       "serv.title": "End-to-end solutions for the business of sport",
+      "band.title": "We turn passion for sport into business results",
+      "band.text": "Strategy, creativity and execution for brands that want to play in the big leagues.",
+      "band.cta": "Let's start",
       "proj.eyebrow": "OUR WORK",
       "proj.title": "Projects that leave a mark",
       "proj.quote": "“A team that understands the business of sport and delivers it with passion. Clear results and a relationship built on trust.”",
@@ -131,9 +139,9 @@ window.TS_DEFAULTS = {
   // --- Proyectos (tarjetas dinámicas) ---
   // image: URL (si está vacío se usa el degradado 'gradient')
   projects: [
-    { image: "", gradient: "linear-gradient(135deg,#0d3b66,#1b6ca8)", es: { tag: "Liga deportiva", title: "Activación de Liga", desc: "Estrategia integral de patrocinios y contenido para una temporada completa." }, en: { tag: "Sports league", title: "League Activation", desc: "Comprehensive sponsorship and content strategy for a full season." } },
-    { image: "", gradient: "linear-gradient(135deg,#b91c1c,#f97316)", es: { tag: "Brand Building", title: "Construcción de Marca", desc: "Posicionamiento y narrativa para una marca deportiva emergente." }, en: { tag: "Brand Building", title: "Brand Building", desc: "Positioning and narrative for an emerging sports brand." } },
-    { image: "", gradient: "linear-gradient(135deg,#166534,#22c55e)", es: { tag: "Evento", title: "Producción de Evento", desc: "Organización end-to-end de un torneo con cobertura multiplataforma." }, en: { tag: "Event", title: "Event Production", desc: "End-to-end organization of a tournament with multi-platform coverage." } }
+    { image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#0d3b66,#1b6ca8)", es: { tag: "Liga deportiva", title: "Activación de Liga", desc: "Estrategia integral de patrocinios y contenido para una temporada completa." }, en: { tag: "Sports league", title: "League Activation", desc: "Comprehensive sponsorship and content strategy for a full season." } },
+    { image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#b91c1c,#f97316)", es: { tag: "Brand Building", title: "Construcción de Marca", desc: "Posicionamiento y narrativa para una marca deportiva emergente." }, en: { tag: "Brand Building", title: "Brand Building", desc: "Positioning and narrative for an emerging sports brand." } },
+    { image: "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#166534,#22c55e)", es: { tag: "Evento", title: "Producción de Evento", desc: "Organización end-to-end de un torneo con cobertura multiplataforma." }, en: { tag: "Event", title: "Event Production", desc: "End-to-end organization of a tournament with multi-platform coverage." } }
   ],
 
   // --- Aliados (logos). logo: URL de imagen; si está vacío, se muestra 'name' como texto ---
