@@ -148,7 +148,7 @@
     if (window.__teamUpdateActive) setTimeout(window.__teamUpdateActive, 30);
   }
 
-  // Carrusel del equipo: resalta la tarjeta central, flechas para navegar
+  // Carrusel del equipo: resalta la tarjeta central, flechas + clic para navegar
   function initTeamCarousel() {
     const track = $("#teamGrid");
     if (!track) return;
@@ -156,9 +156,16 @@
       const c = track.querySelector(".team-card");
       return c ? c.offsetWidth + 20 : 260;
     };
-    const prev = $("#teamPrev"), next = $("#teamNext");
-    if (prev) prev.onclick = () => track.scrollBy({ left: -step(), behavior: "smooth" });
-    if (next) next.onclick = () => track.scrollBy({ left: step(), behavior: "smooth" });
+    // Espacio lateral para que la 1ª y la última tarjeta puedan centrarse
+    function setPadding() {
+      const c = track.querySelector(".team-card");
+      const pad = c ? Math.max(0, (track.clientWidth - c.offsetWidth) / 2) : 0;
+      track.style.paddingLeft = pad + "px";
+      track.style.paddingRight = pad + "px";
+    }
+    function centerCard(card) {
+      track.scrollTo({ left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2, behavior: "smooth" });
+    }
     function updateActive() {
       const cards = track.querySelectorAll(".team-card");
       const center = track.scrollLeft + track.clientWidth / 2;
@@ -170,17 +177,26 @@
       });
       cards.forEach((c) => c.classList.toggle("active", c === best));
     }
+    const prev = $("#teamPrev"), next = $("#teamNext");
+    if (prev) prev.onclick = () => track.scrollBy({ left: -step(), behavior: "smooth" });
+    if (next) next.onclick = () => track.scrollBy({ left: step(), behavior: "smooth" });
+    // Clic en una tarjeta: la centra y la activa
+    track.addEventListener("click", (e) => {
+      const card = e.target.closest(".team-card");
+      if (card) centerCard(card);
+    });
     let ticking = false;
     track.addEventListener("scroll", () => {
       if (!ticking) { requestAnimationFrame(() => { updateActive(); ticking = false; }); ticking = true; }
     }, { passive: true });
-    window.__teamUpdateActive = updateActive;
+    window.addEventListener("resize", () => { setPadding(); updateActive(); });
+    window.__teamUpdateActive = () => { setPadding(); updateActive(); };
     // Centrar la tarjeta del medio al inicio
     setTimeout(() => {
+      setPadding();
       const cards = track.querySelectorAll(".team-card");
       if (cards.length) {
-        const mid = cards[Math.floor(cards.length / 2)];
-        track.scrollLeft = mid.offsetLeft - (track.clientWidth - mid.offsetWidth) / 2;
+        centerCard(cards[Math.floor(cards.length / 2)]);
         updateActive();
       }
     }, 120);
