@@ -8,6 +8,15 @@
   setTimeout(hide, 3000);
 })();
 
+// ===== Header transparente → sólido al hacer scroll =====
+(function () {
+  const header = document.getElementById("top");
+  if (!header) return;
+  const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 40);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
+
 // ===== Año en el footer =====
 document.getElementById("year").textContent = new Date().getFullYear();
 

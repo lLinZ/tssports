@@ -18,7 +18,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
 
 body {
   font-family: "Inter", system-ui, sans-serif;
@@ -265,6 +265,36 @@ img { max-width: 100%; display: block; }
 /* =====================================================================
    ✦ CAPA CINEMÁTICA (rediseño con vida) — sobrescribe lo anterior
    ===================================================================== */
+
+/* ---- Header transparente sobre el hero (sólido al bajar) ---- */
+.site-header {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: transparent; backdrop-filter: none; border-bottom: 1px solid transparent;
+  transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+}
+.site-header .brand-name { color: #fff; }
+.site-header .nav a { color: rgba(255,255,255,.85); }
+.site-header .nav a:hover { color: #fff; }
+.site-header .lang-toggle { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.35); color: #fff; }
+.site-header .lang-opt.active { color: var(--accent-2); }
+.site-header .menu-btn span { background: #fff; }
+
+.site-header.scrolled {
+  background: rgba(255,255,255,.92); backdrop-filter: blur(10px);
+  border-bottom-color: var(--line); box-shadow: 0 4px 20px rgba(10,31,60,.06);
+}
+.site-header.scrolled .brand-name { color: var(--ink); }
+.site-header.scrolled .nav a { color: var(--muted); }
+.site-header.scrolled .nav a:hover { color: var(--ink); }
+.site-header.scrolled .lang-toggle { background: var(--bg-alt); border-color: var(--line); color: var(--muted); }
+.site-header.scrolled .lang-opt.active { color: var(--accent); }
+.site-header.scrolled .menu-btn span { background: var(--ink); }
+
+/* Menú móvil desplegado: panel blanco, texto legible */
+@media (max-width: 900px) {
+  .site-header .nav.open { background: #fff; }
+  .site-header .nav.open a { color: var(--ink); }
+}
 
 /* ---- Pantalla de carga ---- */
 .loader {
