@@ -370,6 +370,24 @@ img { max-width: 100%; display: block; }
 .about-photo-badge span:last-child { font-size: .82rem; opacity: .92; margin-top: 4px; }
 .about-content .value-list { margin-top: 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 
+/* ---- Equipo ---- */
+.team-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.team-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+  box-shadow: var(--shadow); transition: transform .2s ease, box-shadow .2s ease; text-align: center;
+}
+.team-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+.team-photo {
+  width: 100%; aspect-ratio: 1 / 1; background: var(--bg-alt) center/cover no-repeat;
+  background-image: linear-gradient(135deg, var(--navy), var(--accent));
+}
+.team-body { padding: 18px 16px 22px; }
+.team-body h3 { font-size: 1.08rem; margin-bottom: 4px; }
+.team-role { color: var(--accent); font-weight: 600; font-size: .9rem; }
+
+@media (max-width: 900px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .team-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; } }
+
 /* ---- Servicios: borde superior de color al hover ---- */
 .service-card { position: relative; overflow: hidden; }
 .service-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transform: scaleX(0); transform-origin: left; transition: transform .3s ease; }

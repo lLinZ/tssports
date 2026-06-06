@@ -12,7 +12,8 @@
 
   // ---- Etiquetas amigables para los textos ----
   const LABELS = {
-    "nav.about": "Menú · Nosotros", "nav.services": "Menú · Servicios", "nav.projects": "Menú · Proyectos", "nav.clients": "Menú · Aliados", "nav.contact": "Menú · Contacto",
+    "nav.about": "Menú · Nosotros", "nav.team": "Menú · Equipo", "nav.services": "Menú · Servicios", "nav.projects": "Menú · Proyectos", "nav.clients": "Menú · Aliados", "nav.contact": "Menú · Contacto",
+    "team.eyebrow": "Equipo · Línea superior", "team.title": "Equipo · Título",
     "hero.eyebrow": "Hero · Línea superior", "hero.title": "Hero · Título", "hero.sub": "Hero · Subtítulo", "hero.expertPrefix": "Hero · Texto antes de la palabra rotativa", "hero.rotators": "Hero · Palabras rotativas (separadas por coma)", "hero.cta1": "Hero · Botón 1", "hero.cta2": "Hero · Botón 2",
     "stat.n1": "Stat 1 · Número", "stats.years": "Stat 1 · Texto", "stat.n2": "Stat 2 · Número", "stats.brands": "Stat 2 · Texto", "stat.n3": "Stat 3 · Número", "stats.areas": "Stat 3 · Texto", "stat.n4": "Stat 4 · Número", "stats.passion": "Stat 4 · Texto",
     "about.eyebrow": "Nosotros · Línea superior", "about.title": "Nosotros · Título", "about.p1": "Nosotros · Párrafo 1", "about.p2": "Nosotros · Párrafo 2",
@@ -85,7 +86,7 @@
 
   /* =================== RENDER DE PANELES =================== */
   function renderAll() {
-    renderColors(); renderImages(); renderTexts();
+    renderColors(); renderImages(); renderTexts(); renderTeam();
     renderServices(); renderProjects(); renderAllies(); renderContact();
   }
 
@@ -171,6 +172,24 @@
       <div class="card"><div class="lang-head"><span></span><span>Español</span><span>English</span></div>${rows}</div>`;
   }
 
+  function renderTeam() {
+    const cards = (data.team || []).map((m, i) =>
+      `<div class="card item-card">
+        <div class="card-head"><h3>Miembro ${i + 1}</h3>
+          <button class="remove-btn" data-action="remove-team" data-idx="${i}">Eliminar</button></div>
+        <div class="field"><label>Nombre</label>
+          <input type="text" value="${escAttr(m.name)}" data-scope="team" data-idx="${i}" data-field="name"></div>
+        <div class="grid-2">
+          <div class="field"><label>Cargo (ES)</label><input type="text" value="${escAttr(m.es.role)}" data-scope="team" data-idx="${i}" data-lang="es" data-field="role"></div>
+          <div class="field"><label>Cargo (EN)</label><input type="text" value="${escAttr(m.en.role)}" data-scope="team" data-idx="${i}" data-lang="en" data-field="role"></div>
+        </div>
+        ${imageField("team", i, m.photo || "", "Foto")}
+      </div>`).join("");
+    $("panel-team").innerHTML =
+      `<h2>Equipo</h2><p class="panel-desc">Agrega, edita o elimina los miembros del equipo (foto, nombre y cargo).</p>${cards}
+      <button class="add-btn" data-action="add-team">+ Agregar miembro</button>`;
+  }
+
   function renderServices() {
     const cards = (data.services || []).map((s, i) =>
       `<div class="card item-card">
@@ -246,6 +265,7 @@
       data.images[ds.scope] = url;
     }
     else if (ds.scope === "project") data.projects[+ds.idx].image = url;
+    else if (ds.scope === "team") data.team[+ds.idx].photo = url;
     else if (ds.scope === "ally") data.allies[+ds.idx].logo = url;
   }
 
@@ -264,6 +284,10 @@
       case "service":
         if (ds.lang) data.services[+ds.idx][ds.lang][ds.field] = v;
         else data.services[+ds.idx][ds.field] = v;
+        break;
+      case "team":
+        if (ds.lang) data.team[+ds.idx][ds.lang][ds.field] = v;
+        else data.team[+ds.idx][ds.field] = v;
         break;
       case "project":
         if (ds.imgUrl === "1") setImg(ds, v);
@@ -289,6 +313,7 @@
         setImg(ds, url);
         if (["hero","about","cta","heroVideo"].indexOf(ds.scope) !== -1) renderImages();
         else if (ds.scope === "project") renderProjects();
+        else if (ds.scope === "team") renderTeam();
         else if (ds.scope === "ally") renderAllies();
         toast("Imagen lista ✔");
       } catch (err) { toast("Error al subir: " + (err.message || err), true); }
@@ -305,6 +330,10 @@
         data.services.push({ icon: "✦", es: { title: "Nuevo servicio", desc: "Descripción..." }, en: { title: "New service", desc: "Description..." } });
         renderServices(); break;
       case "remove-service": data.services.splice(idx, 1); renderServices(); break;
+      case "add-team":
+        data.team.push({ name: "Nombre Apellido", photo: "", es: { role: "Cargo" }, en: { role: "Role" } });
+        renderTeam(); break;
+      case "remove-team": data.team.splice(idx, 1); renderTeam(); break;
       case "add-project":
         data.projects.push({ image: "", gradient: "linear-gradient(135deg,#0d3b66,#1b6ca8)", es: { tag: "Etiqueta", title: "Nuevo proyecto", desc: "Descripción..." }, en: { tag: "Tag", title: "New project", desc: "Description..." } });
         renderProjects(); break;
@@ -314,6 +343,7 @@
       case "clear-img": setImg(btn.dataset, "");
         if (["hero","about","cta","heroVideo"].indexOf(btn.dataset.scope) !== -1) renderImages();
         else if (btn.dataset.scope === "project") renderProjects();
+        else if (btn.dataset.scope === "team") renderTeam();
         else if (btn.dataset.scope === "ally") renderAllies();
         break;
     }

@@ -34,6 +34,7 @@ window.TS_DEFAULTS = {
   texts: {
     es: {
       "nav.about": "Nosotros",
+      "nav.team": "Equipo",
       "nav.services": "Servicios",
       "nav.projects": "Proyectos",
       "nav.clients": "Aliados",
@@ -58,6 +59,8 @@ window.TS_DEFAULTS = {
       "about.v2t": "Creatividad", "about.v2d": "Ideas que generan conversación y comunidad.",
       "about.v3t": "Ejecución", "about.v3d": "Operación impecable de principio a fin.",
       "about.v4t": "Resultados", "about.v4d": "Medición de ROI y mejora continua.",
+      "team.eyebrow": "NUESTRO EQUIPO",
+      "team.title": "Las personas detrás de TS Sports",
       "serv.eyebrow": "NUESTROS SERVICIOS",
       "serv.title": "Soluciones integrales para el negocio del deporte",
       "band.title": "Convertimos la pasión por el deporte en resultados de negocio",
@@ -87,6 +90,7 @@ window.TS_DEFAULTS = {
     },
     en: {
       "nav.about": "About",
+      "nav.team": "Team",
       "nav.services": "Services",
       "nav.projects": "Projects",
       "nav.clients": "Partners",
@@ -111,6 +115,8 @@ window.TS_DEFAULTS = {
       "about.v2t": "Creativity", "about.v2d": "Ideas that spark conversation and community.",
       "about.v3t": "Execution", "about.v3d": "Flawless operations from start to finish.",
       "about.v4t": "Results", "about.v4d": "ROI measurement and continuous improvement.",
+      "team.eyebrow": "OUR TEAM",
+      "team.title": "The people behind TS Sports",
       "serv.eyebrow": "OUR SERVICES",
       "serv.title": "End-to-end solutions for the business of sport",
       "band.title": "We turn passion for sport into business results",
@@ -156,6 +162,14 @@ window.TS_DEFAULTS = {
     { image: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#0d3b66,#1b6ca8)", es: { tag: "Liga deportiva", title: "Activación de Liga", desc: "Estrategia integral de patrocinios y contenido para una temporada completa." }, en: { tag: "Sports league", title: "League Activation", desc: "Comprehensive sponsorship and content strategy for a full season." } },
     { image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#b91c1c,#f97316)", es: { tag: "Brand Building", title: "Construcción de Marca", desc: "Posicionamiento y narrativa para una marca deportiva emergente." }, en: { tag: "Brand Building", title: "Brand Building", desc: "Positioning and narrative for an emerging sports brand." } },
     { image: "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=800&q=80", gradient: "linear-gradient(135deg,#166534,#22c55e)", es: { tag: "Evento", title: "Producción de Evento", desc: "Organización end-to-end de un torneo con cobertura multiplataforma." }, en: { tag: "Event", title: "Event Production", desc: "End-to-end organization of a tournament with multi-platform coverage." } }
+  ],
+
+  // --- Equipo (personas). photo: URL; role bilingüe ---
+  team: [
+    { name: "Carlos Méndez", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&h=500&q=75", es: { role: "Director General" }, en: { role: "Managing Director" } },
+    { name: "Ana Rodríguez", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&h=500&q=75", es: { role: "Directora de Estrategia" }, en: { role: "Strategy Director" } },
+    { name: "Diego Torres", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&h=500&q=75", es: { role: "Líder de Patrocinios" }, en: { role: "Sponsorship Lead" } },
+    { name: "Valentina Ruiz", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=500&h=500&q=75", es: { role: "Directora de Contenido" }, en: { role: "Content Director" } }
   ],
 
   // --- Aliados (logos). logo: URL de imagen; si está vacío, se muestra 'name' como texto ---

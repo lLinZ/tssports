@@ -130,6 +130,23 @@
     }).join("");
   }
 
+  // --- Equipo ---
+  function renderTeam(lang) {
+    const grid = $("#teamGrid");
+    if (!grid) return;
+    grid.innerHTML = (CONTENT.team || []).map((m) => {
+      const t = m[lang] || m.es || {};
+      const ph = m.photo ? `background-image:url('${esc(m.photo)}')` : "";
+      return `<article class="team-card">
+        <div class="team-photo" style="${ph}"></div>
+        <div class="team-body">
+          <h3>${esc(m.name)}</h3>
+          <p class="team-role">${esc(t.role)}</p>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
   // --- Aliados (marquesina infinita; se duplica para el loop) ---
   function renderAllies() {
     const grid = $("#logosGrid");
@@ -145,7 +162,7 @@
   // --- Animación de aparición (después de renderizar) ---
   function initReveal() {
     const els = document.querySelectorAll(
-      ".section-head, .about-photo, .about-content, .service-card, .project-card, .testimonial, .contact-form, .stat, .cta-band-inner"
+      ".section-head, .about-photo, .about-content, .team-card, .service-card, .project-card, .testimonial, .contact-form, .stat, .cta-band-inner"
     );
     els.forEach((el) => { if (!el.classList.contains("reveal")) el.classList.add("reveal"); });
     const all = document.querySelectorAll(".reveal");
@@ -230,6 +247,7 @@
     LANG = (lang === "en") ? "en" : "es";
     document.documentElement.lang = LANG;
     applyTexts(LANG);
+    renderTeam(LANG);
     renderServices(LANG);
     renderProjects(LANG);
     initRotator();
