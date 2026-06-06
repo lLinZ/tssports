@@ -61,10 +61,17 @@
     if (!ct) return;
     const email = $("#contactEmail");
     if (email && ct.email) { email.textContent = ct.email; email.href = "mailto:" + ct.email; }
+    // Enlaces sociales: se ocultan si están vacíos o en "#" (evita links muertos)
+    const real = (v) => (v && v !== "#") ? v : "";
+    const igUrl = real(ct.instagram), liUrl = real(ct.linkedin);
     const ig = $("#contactInstagram");
-    if (ig) ig.href = ct.instagram || "#";
+    if (ig) { if (igUrl) { ig.href = igUrl; ig.style.display = ""; } else ig.style.display = "none"; }
     const li = $("#contactLinkedin");
-    if (li) li.href = ct.linkedin || "#";
+    if (li) { if (liUrl) { li.href = liUrl; li.style.display = ""; } else li.style.display = "none"; }
+    const sep = $("#contactSocialSep");
+    if (sep) sep.style.display = (igUrl && liUrl) ? "" : "none";
+    const socialItem = $("#contactSocialItem");
+    if (socialItem) socialItem.style.display = (igUrl || liUrl) ? "" : "none";
     const digits = (ct.whatsapp || "").replace(/\D/g, "");
     const waHref = digits
       ? "https://wa.me/" + digits + "?text=" + encodeURIComponent("Hola TS Sports, me gustaría más información.")
