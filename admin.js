@@ -13,7 +13,7 @@
   // ---- Etiquetas amigables para los textos ----
   const LABELS = {
     "nav.about": "Menú · Nosotros", "nav.services": "Menú · Servicios", "nav.projects": "Menú · Proyectos", "nav.clients": "Menú · Aliados", "nav.contact": "Menú · Contacto",
-    "hero.eyebrow": "Hero · Línea superior", "hero.title": "Hero · Título", "hero.sub": "Hero · Subtítulo", "hero.cta1": "Hero · Botón 1", "hero.cta2": "Hero · Botón 2",
+    "hero.eyebrow": "Hero · Línea superior", "hero.title": "Hero · Título", "hero.sub": "Hero · Subtítulo", "hero.expertPrefix": "Hero · Texto antes de la palabra rotativa", "hero.rotators": "Hero · Palabras rotativas (separadas por coma)", "hero.cta1": "Hero · Botón 1", "hero.cta2": "Hero · Botón 2",
     "stat.n1": "Stat 1 · Número", "stats.years": "Stat 1 · Texto", "stat.n2": "Stat 2 · Número", "stats.brands": "Stat 2 · Texto", "stat.n3": "Stat 3 · Número", "stats.areas": "Stat 3 · Texto", "stat.n4": "Stat 4 · Número", "stats.passion": "Stat 4 · Texto",
     "about.eyebrow": "Nosotros · Línea superior", "about.title": "Nosotros · Título", "about.p1": "Nosotros · Párrafo 1", "about.p2": "Nosotros · Párrafo 2",
     "about.v1t": "Valor 1 · Título", "about.v1d": "Valor 1 · Texto", "about.v2t": "Valor 2 · Título", "about.v2d": "Valor 2 · Texto",

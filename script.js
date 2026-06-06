@@ -1,3 +1,13 @@
+// ===== Pantalla de carga (se oculta al cargar) =====
+(function () {
+  const loader = document.getElementById("loader");
+  if (!loader) return;
+  const hide = () => loader.classList.add("loaded");
+  // Se oculta al terminar de cargar (con un mínimo para que se note), y un tope de seguridad
+  window.addEventListener("load", () => setTimeout(hide, 500));
+  setTimeout(hide, 3000);
+})();
+
 // ===== Año en el footer =====
 document.getElementById("year").textContent = new Date().getFullYear();
 

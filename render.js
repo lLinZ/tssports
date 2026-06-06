@@ -197,6 +197,27 @@
     update();
   }
 
+  // --- Palabra rotativa del hero ---
+  let rotTimer = null;
+  function initRotator() {
+    const el = $("#rotateWord");
+    if (!el) return;
+    if (rotTimer) { clearInterval(rotTimer); rotTimer = null; }
+    const raw = (CONTENT.texts[LANG] && CONTENT.texts[LANG]["hero.rotators"]) || "";
+    const list = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (!list.length) { el.textContent = ""; return; }
+    let i = 0;
+    el.textContent = list[0];
+    rotTimer = setInterval(function () {
+      el.classList.add("swap");
+      setTimeout(function () {
+        i = (i + 1) % list.length;
+        el.textContent = list[i];
+        el.classList.remove("swap");
+      }, 350);
+    }, 2200);
+  }
+
   // --- Idioma ---
   function setLang(lang) {
     LANG = (lang === "en") ? "en" : "es";
@@ -204,6 +225,7 @@
     applyTexts(LANG);
     renderServices(LANG);
     renderProjects(LANG);
+    initRotator();
     document.querySelectorAll(".lang-opt").forEach((o) =>
       o.classList.toggle("active", o.dataset.lang === LANG));
     try { localStorage.setItem("ts_lang", LANG); } catch (e) {}
