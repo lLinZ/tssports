@@ -62,6 +62,19 @@
 
   $("logoutBtn").addEventListener("click", async () => { await S.signOut(); showLogin(); });
 
+  $("resetBtn").addEventListener("click", async () => {
+    if (!confirm("¿Restablecer TODO el contenido al diseño por defecto?\n\nSe perderán los cambios guardados (colores, textos, fotos, etc.) y volverá la versión de fábrica.")) return;
+    $("resetBtn").disabled = true;
+    try {
+      data = JSON.parse(JSON.stringify(window.TS_DEFAULTS));
+      await S.saveContent(data);
+      renderAll();
+      toast("Contenido restablecido al diseño por defecto ✔");
+    } catch (err) {
+      toast("Error al restablecer: " + (err.message || err), true);
+    } finally { $("resetBtn").disabled = false; }
+  });
+
   /* =================== TABS =================== */
   $("adminTabs").addEventListener("click", (e) => {
     const tab = e.target.closest(".tab");
