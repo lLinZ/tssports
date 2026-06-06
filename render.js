@@ -65,17 +65,20 @@
     if (ig) ig.href = ct.instagram || "#";
     const li = $("#contactLinkedin");
     if (li) li.href = ct.linkedin || "#";
+    const digits = (ct.whatsapp || "").replace(/\D/g, "");
+    const waHref = digits
+      ? "https://wa.me/" + digits + "?text=" + encodeURIComponent("Hola TS Sports, me gustaría más información.")
+      : "";
     const wa = $("#contactWhatsapp");
     if (wa) {
-      const digits = (ct.whatsapp || "").replace(/\D/g, "");
-      if (digits) {
-        const msg = encodeURIComponent("Hola TS Sports, me gustaría más información.");
-        wa.href = "https://wa.me/" + digits + "?text=" + msg;
-        wa.style.display = "";
-      } else {
-        wa.style.display = "none";
-      }
+      if (waHref) { wa.href = waHref; wa.style.display = ""; } else { wa.style.display = "none"; }
     }
+    const waFloat = $("#waFloat");
+    if (waFloat) {
+      if (waHref) { waFloat.href = waHref; waFloat.style.display = ""; } else { waFloat.style.display = "none"; }
+    }
+    const waNum = $("#waNumber");
+    if (waNum) { waNum.textContent = ct.whatsapp || ""; waNum.style.display = ct.whatsapp ? "" : "none"; }
   }
 
   // --- Textos fijos (data-i18n) ---

@@ -21,7 +21,8 @@
     "serv.eyebrow": "Servicios · Línea superior", "serv.title": "Servicios · Título",
     "proj.eyebrow": "Proyectos · Línea superior", "proj.title": "Proyectos · Título", "proj.quote": "Testimonial · Frase", "proj.quoteby": "Testimonial · Autor",
     "ally.eyebrow": "Aliados · Línea superior", "ally.title": "Aliados · Título",
-    "contact.eyebrow": "Contacto · Línea superior", "contact.title": "Contacto · Título", "contact.p1": "Contacto · Texto", "contact.email": "Contacto · Etiqueta Email", "contact.social": "Contacto · Etiqueta Redes",
+    "contact.eyebrow": "Contacto · Línea superior", "contact.title": "Contacto · Título", "contact.p1": "Contacto · Texto", "contact.email": "Contacto · Etiqueta Email", "contact.social": "Contacto · Etiqueta Redes", "contact.wa": "WhatsApp · Texto del botón",
+    "wa.eyebrow": "WhatsApp · Línea superior", "wa.title": "WhatsApp · Título", "wa.text": "WhatsApp · Texto",
     "form.name": "Formulario · Nombre", "form.email": "Formulario · Email", "form.message": "Formulario · Mensaje", "form.send": "Formulario · Botón",
     "footer.tag": "Pie · Lema", "footer.rights": "Pie · Derechos"
   };
