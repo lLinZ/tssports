@@ -130,7 +130,7 @@
     }).join("");
   }
 
-  // --- Equipo ---
+  // --- Equipo (carrusel) ---
   function renderTeam(lang) {
     const grid = $("#teamGrid");
     if (!grid) return;
@@ -139,12 +139,51 @@
       const ph = m.photo ? `background-image:url('${esc(m.photo)}')` : "";
       return `<article class="team-card">
         <div class="team-photo" style="${ph}"></div>
-        <div class="team-body">
+        <div class="team-overlay">
           <h3>${esc(m.name)}</h3>
           <p class="team-role">${esc(t.role)}</p>
         </div>
       </article>`;
     }).join("");
+    if (window.__teamUpdateActive) setTimeout(window.__teamUpdateActive, 30);
+  }
+
+  // Carrusel del equipo: resalta la tarjeta central, flechas para navegar
+  function initTeamCarousel() {
+    const track = $("#teamGrid");
+    if (!track) return;
+    const step = () => {
+      const c = track.querySelector(".team-card");
+      return c ? c.offsetWidth + 20 : 260;
+    };
+    const prev = $("#teamPrev"), next = $("#teamNext");
+    if (prev) prev.onclick = () => track.scrollBy({ left: -step(), behavior: "smooth" });
+    if (next) next.onclick = () => track.scrollBy({ left: step(), behavior: "smooth" });
+    function updateActive() {
+      const cards = track.querySelectorAll(".team-card");
+      const center = track.scrollLeft + track.clientWidth / 2;
+      let best = null, bd = Infinity;
+      cards.forEach((c) => {
+        const cc = c.offsetLeft + c.offsetWidth / 2;
+        const d = Math.abs(cc - center);
+        if (d < bd) { bd = d; best = c; }
+      });
+      cards.forEach((c) => c.classList.toggle("active", c === best));
+    }
+    let ticking = false;
+    track.addEventListener("scroll", () => {
+      if (!ticking) { requestAnimationFrame(() => { updateActive(); ticking = false; }); ticking = true; }
+    }, { passive: true });
+    window.__teamUpdateActive = updateActive;
+    // Centrar la tarjeta del medio al inicio
+    setTimeout(() => {
+      const cards = track.querySelectorAll(".team-card");
+      if (cards.length) {
+        const mid = cards[Math.floor(cards.length / 2)];
+        track.scrollLeft = mid.offsetLeft - (track.clientWidth - mid.offsetWidth) / 2;
+        updateActive();
+      }
+    }, 120);
   }
 
   // --- Aliados (marquesina infinita; se duplica para el loop) ---
@@ -162,7 +201,7 @@
   // --- Animación de aparición (después de renderizar) ---
   function initReveal() {
     const els = document.querySelectorAll(
-      ".section-head, .about-photo, .about-content, .team-card, .service-card, .project-card, .testimonial, .contact-form, .stat, .cta-band-inner"
+      ".section-head, .about-photo, .about-content, .service-card, .project-card, .testimonial, .contact-form, .stat, .cta-band-inner"
     );
     els.forEach((el) => { if (!el.classList.contains("reveal")) el.classList.add("reveal"); });
     const all = document.querySelectorAll(".reveal");
@@ -276,6 +315,7 @@
     initReveal();
     setupCounters();
     initParallax();
+    initTeamCarousel();
   }
 
   window.TS_RENDER = { setLang: () => setLang(LANG === "es" ? "en" : "es") };

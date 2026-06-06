@@ -113,13 +113,24 @@
   </section>
 
   <!-- ===== Equipo ===== -->
-  <section class="section section-alt" id="equipo">
+  <section class="section team-section" id="equipo">
     <div class="container">
       <div class="section-head">
         <p class="section-eyebrow" data-i18n="team.eyebrow">NUESTRO EQUIPO</p>
         <h2 class="section-title" data-i18n="team.title">Las personas detrás de TS Sports</h2>
       </div>
-      <div class="team-grid" id="teamGrid"><!-- render.js --></div>
+      <div class="team-carousel">
+        <button class="team-nav team-prev" id="teamPrev" aria-label="Anterior">&#8249;</button>
+        <div class="team-track" id="teamGrid"><!-- render.js --></div>
+        <button class="team-nav team-next" id="teamNext" aria-label="Siguiente">&#8250;</button>
+      </div>
+      <div class="team-join">
+        <div>
+          <h3 data-i18n="team.joinTitle">¿Te gustaría unirte al equipo?</h3>
+          <p data-i18n="team.joinText">Envíanos tu información junto con tu CV.</p>
+        </div>
+        <a class="btn btn-primary" href="#contacto" data-i18n="team.joinCta">Escríbenos</a>
+      </div>
     </div>
   </section>
 
