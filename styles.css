@@ -184,8 +184,8 @@ img { max-width: 100%; display: block; }
   background: radial-gradient(circle, rgba(255,255,255,.18), transparent 70%); border-radius: 50%;
 }
 .wa-card-icon {
-  flex: 0 0 auto; width: 84px; height: 84px; border-radius: 20px; display: grid; place-items: center;
-  background: rgba(255,255,255,.18); color: #fff; position: relative; z-index: 1;
+  flex: 0 0 auto; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; color: #25D366; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(0,0,0,.15);
 }
 .wa-card-body { flex: 1 1 320px; position: relative; z-index: 1; }
 .wa-eyebrow { letter-spacing: .2em; font-size: .74rem; font-weight: 700; opacity: .9; margin-bottom: 8px; }
