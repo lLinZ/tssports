@@ -25,12 +25,12 @@ nav.querySelectorAll("a").forEach((a) =>
   })
 );
 
-// ===== Formulario de contacto (demo, sin backend) =====
+// ===== Formulario de contacto → abre WhatsApp con el mensaje redactado =====
 const form = document.getElementById("contactForm");
 const status = document.getElementById("formStatus");
 const MSG = {
-  es: { ok: "¡Gracias! Tu mensaje fue enviado. Te contactaremos pronto.", err: "Por favor completa todos los campos correctamente." },
-  en: { ok: "Thanks! Your message was sent. We'll be in touch soon.", err: "Please fill in all fields correctly." }
+  es: { ok: "¡Listo! Te abrimos WhatsApp para enviar tu mensaje.", err: "Por favor completa todos los campos correctamente.", nowa: "No hay un número de WhatsApp configurado." },
+  en: { ok: "Done! We're opening WhatsApp to send your message.", err: "Please fill in all fields correctly.", nowa: "No WhatsApp number is configured." }
 };
 
 form.addEventListener("submit", (e) => {
@@ -42,6 +42,30 @@ form.addEventListener("submit", (e) => {
     form.reportValidity();
     return;
   }
+
+  const name = (document.getElementById("name").value || "").trim();
+  const email = (document.getElementById("email").value || "").trim();
+  const message = (document.getElementById("message").value || "").trim();
+
+  // El número sale del enlace de WhatsApp que render.js ya construyó
+  const waLink = document.getElementById("contactWhatsapp");
+  let digits = "";
+  if (waLink && waLink.href) {
+    const m = waLink.href.match(/wa\.me\/(\d+)/);
+    if (m) digits = m[1];
+  }
+  if (!digits) {
+    status.textContent = MSG[lang].nowa;
+    status.className = "form-status err";
+    return;
+  }
+
+  const text = (lang === "en")
+    ? `Hi TS Sports! 👋\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
+    : `¡Hola TS Sports! 👋\n\nNombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`;
+
+  window.open("https://wa.me/" + digits + "?text=" + encodeURIComponent(text), "_blank");
+
   status.textContent = MSG[lang].ok;
   status.className = "form-status ok";
   form.reset();

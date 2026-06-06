@@ -76,7 +76,7 @@ window.TS_DEFAULTS = {
       "form.name": "Nombre",
       "form.email": "Email",
       "form.message": "Mensaje",
-      "form.send": "Enviar mensaje",
+      "form.send": "Enviar por WhatsApp",
       "footer.tag": "Marketing & consultoría deportiva.",
       "footer.rights": "Todos los derechos reservados."
     },
@@ -124,7 +124,7 @@ window.TS_DEFAULTS = {
       "form.name": "Name",
       "form.email": "Email",
       "form.message": "Message",
-      "form.send": "Send message",
+      "form.send": "Send via WhatsApp",
       "footer.tag": "Sports marketing & consulting.",
       "footer.rights": "All rights reserved."
     }
