@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TS Sports · CRM de Patrocinios</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="crm.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ===== Login ===== -->
+  <section class="login-screen" id="loginScreen">
+    <form class="login-card" id="loginForm">
+      <div class="brand brand-login"><span class="brand-mark">TS</span><span class="brand-name">Sports</span></div>
+      <h1>CRM de Patrocinios</h1>
+      <p class="login-sub">Inicia sesión para gestionar tus clientes y oportunidades.</p>
+      <div class="field"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required autocomplete="username" /></div>
+      <div class="field"><label for="loginPass">Contraseña</label><input type="password" id="loginPass" required autocomplete="current-password" /></div>
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      <p class="login-status" id="loginStatus" role="status"></p>
+      <p class="login-mode" id="loginMode"></p>
+    </form>
+  </section>
+
+  <!-- ===== App ===== -->
+  <div class="admin-app" id="crmApp" hidden>
+    <header class="admin-top">
+      <div class="brand"><span class="brand-mark">TS</span><span class="brand-name">Sports</span><span class="admin-badge">CRM</span></div>
+      <div class="admin-top-actions">
+        <button class="btn btn-text" id="refreshBtn">↻ Actualizar</button>
+        <a href="index.html" target="_blank" class="btn btn-ghost btn-sm">Ver sitio ↗</a>
+        <button class="btn btn-primary btn-sm" id="addBtn">+ Nueva oportunidad</button>
+        <button class="btn btn-text" id="logoutBtn">Salir</button>
+      </div>
+    </header>
+
+    <!-- Métricas -->
+    <div class="crm-stats" id="crmStats"></div>
+
+    <!-- Tablero Kanban -->
+    <div class="crm-board" id="crmBoard"></div>
+  </div>
+
+  <!-- ===== Modal ===== -->
+  <div class="modal-overlay" id="modalOverlay" hidden>
+    <form class="modal-card" id="dealForm">
+      <h2 id="modalTitle">Nueva oportunidad</h2>
+      <input type="hidden" id="dealId" />
+      <div class="grid-2">
+        <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
+        <div class="field"><label>Valor estimado (USD)</label><input type="number" id="f-value" min="0" step="100" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" /></div>
+        <div class="field"><label>Etapa</label>
+          <select id="f-stage">
+            <option value="nuevo">Nuevo</option>
+            <option value="contactado">Contactado</option>
+            <option value="propuesta">Propuesta</option>
+            <option value="negociacion">Negociación</option>
+            <option value="ganado">Ganado</option>
+            <option value="perdido">Perdido</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
+        <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
+      </div>
+      <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-text" id="deleteBtn">Eliminar</button>
+        <div style="flex:1"></div>
+        <button type="button" class="btn btn-text" id="cancelBtn">Cancelar</button>
+        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="save-toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="crm.js"></script>
+</body>
+</html>

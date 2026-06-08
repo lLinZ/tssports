@@ -83,6 +83,11 @@ form.addEventListener("submit", (e) => {
     ? `Hi TS Sports! 👋\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
     : `¡Hola TS Sports! 👋\n\nNombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`;
 
+  // Guarda el lead en el CRM (no bloquea el flujo de WhatsApp)
+  if (window.TS_STORE && window.TS_STORE.addLead) {
+    window.TS_STORE.addLead({ brand: name, contact: name, email: email, notes: message }).catch(function () {});
+  }
+
   window.open("https://wa.me/" + digits + "?text=" + encodeURIComponent(text), "_blank");
 
   status.textContent = MSG[lang].ok;

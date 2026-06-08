@@ -118,6 +118,22 @@
     await sb.auth.signOut();
   }
 
+  // Crea un lead en el CRM (tabla deals) desde el formulario público
+  async function addLead(lead) {
+    if (!HAS_CLOUD) return; // sin Supabase no hay backend del CRM
+    const row = {
+      brand: lead.brand || lead.contact || "",
+      contact: lead.contact || "",
+      email: lead.email || "",
+      phone: lead.phone || "",
+      notes: lead.notes || "",
+      stage: "nuevo",
+      source: "web"
+    };
+    const { error } = await sb.from("deals").insert([row]);
+    if (error) throw error;
+  }
+
   async function getUser() {
     if (!HAS_CLOUD) {
       return sessionStorage.getItem("ts_local_admin") ? { email: "local@admin" } : null;
@@ -131,6 +147,7 @@
     loadContent,
     saveContent,
     uploadImage,
+    addLead,
     signIn,
     signOut,
     getUser

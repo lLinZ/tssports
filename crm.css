@@ -1,0 +1,52 @@
+/* ===== CRM de Patrocinios ===== */
+
+/* Métricas */
+.crm-stats { display: flex; gap: 16px; flex-wrap: wrap; padding: 22px 22px 6px; max-width: 1400px; margin: 0 auto; }
+.crm-stat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; box-shadow: var(--shadow); min-width: 150px; }
+.crm-stat .cs-num { font-family: "Sora", sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); }
+.crm-stat .cs-label { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.crm-stat.win .cs-num { color: var(--accent-2); }
+.crm-stat.pipe .cs-num { color: var(--accent); }
+
+/* Tablero */
+.crm-board {
+  display: flex; gap: 16px; align-items: flex-start;
+  padding: 18px 22px 40px; overflow-x: auto; max-width: 1400px; margin: 0 auto;
+}
+.crm-col {
+  flex: 0 0 280px; background: var(--bg-alt); border: 1px solid var(--line);
+  border-radius: 14px; padding: 12px; min-height: 200px; transition: background .15s, box-shadow .15s;
+}
+.crm-col.drop-hover { background: #eaf6f8; box-shadow: inset 0 0 0 2px var(--accent); }
+.crm-col-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 6px 12px; }
+.crm-col-head h3 { font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.crm-col-dot { width: 9px; height: 9px; border-radius: 50%; }
+.crm-col-count { font-size: .78rem; font-weight: 700; color: var(--muted); background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+.crm-col-sum { font-size: .76rem; color: var(--muted); padding: 0 6px 10px; }
+
+/* Tarjeta de oportunidad */
+.deal-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(10,31,60,.06); cursor: grab; transition: transform .12s, box-shadow .12s, opacity .12s;
+}
+.deal-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.deal-card:active { cursor: grabbing; }
+.deal-card.dragging { opacity: .4; }
+.deal-brand { font-weight: 700; font-size: .98rem; margin-bottom: 2px; }
+.deal-contact { font-size: .82rem; color: var(--muted); }
+.deal-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+.deal-value { font-family: "Sora", sans-serif; font-weight: 700; font-size: .9rem; color: var(--accent); }
+.deal-source { font-size: .66rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--accent-2); border-radius: 5px; padding: 2px 6px; }
+.deal-empty { font-size: .82rem; color: var(--muted); text-align: center; padding: 16px 0; opacity: .7; }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(10,31,60,.5); display: grid; place-items: center; padding: 20px; }
+.modal-card { background: #fff; border-radius: 16px; padding: 26px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg); max-height: 92vh; overflow: auto; }
+.modal-card h2 { font-size: 1.3rem; margin-bottom: 18px; }
+.modal-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.modal-card .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; font: inherit; background: var(--bg-alt); }
+
+@media (max-width: 600px) {
+  .crm-col { flex-basis: 80%; }
+  .modal-card .grid-2 { grid-template-columns: 1fr; }
+}
