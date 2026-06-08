@@ -146,7 +146,7 @@
     const img = data.images || {};
     $("panel-images").innerHTML =
       `<h2>Imágenes y video</h2><p class="panel-desc">Fotos de fondo del sitio. Recomendado: horizontales de buena calidad (1600×900px o más).</p>
-      <div class="card"><div class="card-head"><h3>🎬 Video del hero (portada)</h3></div>
+      <div class="card"><div class="card-head"><h3><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Video del hero (portada)</h3></div>
         <p class="panel-desc" style="margin-bottom:14px">Video corto en bucle, sin sonido. Recomendado: MP4 horizontal, menos de 10&nbsp;MB. Si lo dejas vacío, se usa la foto del hero.</p>`
         + videoField("heroVideo", img.heroVideo || "", "Video de portada (MP4)") + `</div>
       <div class="card"><div class="card-head"><h3>Imagen del hero (respaldo)</h3></div>

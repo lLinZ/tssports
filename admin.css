@@ -26,9 +26,14 @@
 /* Layout */
 .admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 0; max-width: 1200px; margin: 0 auto; min-height: calc(100vh - 60px); }
 .admin-tabs { display: flex; flex-direction: column; gap: 4px; padding: 22px 14px; border-right: 1px solid var(--line); }
-.tab { text-align: left; background: none; border: none; padding: 11px 14px; border-radius: 9px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
+.tab { display: flex; align-items: center; gap: 11px; text-align: left; background: none; border: none; padding: 11px 14px; border-radius: 9px; font: inherit; font-weight: 600; color: var(--muted); cursor: pointer; }
 .tab:hover { background: #fff; color: var(--ink); }
 .tab.active { background: var(--accent); color: #fff; }
+
+/* Íconos de línea (SVG) */
+.ic { width: 18px; height: 18px; flex: 0 0 auto; vertical-align: -3px; }
+.btn { gap: 8px; }
+.card-head .ic { vertical-align: -4px; margin-right: 6px; color: var(--accent); }
 
 .admin-main { padding: 28px; }
 .panel { display: none; }
