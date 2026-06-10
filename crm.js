@@ -21,6 +21,7 @@
   ];
 
   let DEALS = [];
+  let PROFILE = null; // { id, name, role }
 
   /* ---------- Auth ---------- */
   async function boot() {
@@ -33,7 +34,33 @@
     if (data && data.user) showApp(); else showLogin();
   }
   function showLogin() { $("crmApp").hidden = true; $("loginScreen").style.display = "grid"; }
-  async function showApp() { $("loginScreen").style.display = "none"; $("crmApp").hidden = false; await load(); }
+  async function showApp() {
+    $("loginScreen").style.display = "none"; $("crmApp").hidden = false;
+    await loadProfile();
+    await load();
+  }
+
+  // Carga el perfil (rol + nombre) del usuario logueado
+  async function loadProfile() {
+    const { data: u } = await sb.auth.getUser();
+    const user = u && u.user;
+    if (!user) return;
+    let prof = null;
+    const { data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle();
+    prof = data;
+    if (!prof) { // por si el trigger aún no creó el perfil
+      const name = (user.email || "").split("@")[0];
+      await sb.from("profiles").upsert({ id: user.id, email: user.email, name }).select();
+      prof = { id: user.id, name, role: "comercial" };
+    }
+    PROFILE = prof;
+    const tag = $("userTag");
+    if (tag) {
+      const rol = prof.role === "admin" ? "Admin" : "Comercial";
+      tag.textContent = "● " + (prof.name || user.email) + " · " + rol;
+      tag.className = "admin-mode-tag" + (prof.role === "admin" ? " cloud" : "");
+    }
+  }
 
   $("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -88,9 +115,12 @@
 
   function cardHtml(d) {
     const src = d.source === "web" ? `<span class="deal-source">Web</span>` : "";
+    const userIc = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name) ? `<div class="deal-contact">${userIc} ${esc(d.owner_name)}</div>` : "";
     return `<div class="deal-card" draggable="true" data-id="${d.id}">
       <div class="deal-brand">${esc(d.brand) || "(sin nombre)"}</div>
       ${d.contact ? `<div class="deal-contact">${esc(d.contact)}</div>` : ""}
+      ${owner}
       <div class="deal-meta">
         <span class="deal-value">${d.value ? money(d.value) : "—"}</span>
         ${src}
@@ -157,7 +187,7 @@
     };
     let error;
     if (id) ({ error } = await sb.from("deals").update(payload).eq("id", id));
-    else ({ error } = await sb.from("deals").insert([payload]));
+    else { payload.owner_name = PROFILE ? PROFILE.name : ""; ({ error } = await sb.from("deals").insert([payload])); }
     if (error) { toast("Error al guardar: " + error.message, true); return; }
     closeModal(); toast("Guardado ✔"); load();
   });
