@@ -47,6 +47,20 @@
 .modal-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
 .modal-card .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; font: inherit; background: var(--bg-alt); }
 
+/* Vista de Usuarios (página dedicada) */
+.users-main { max-width: 1000px; margin: 0 auto; padding: 24px 22px 40px; }
+.users-create-grid { display: grid; grid-template-columns: 1.2fr 1.4fr 1fr .8fr auto; gap: 14px; align-items: end; }
+.users-table { width: 100%; border-collapse: collapse; }
+.users-table th { text-align: left; font-size: .76rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.users-table td { padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.users-table tr:last-child td { border-bottom: none; }
+.users-table tbody tr:hover { background: var(--bg-alt); }
+.users-table select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--bg-alt); }
+@media (max-width: 760px) {
+  .users-create-grid { grid-template-columns: 1fr 1fr; }
+  .users-table th:nth-child(4), .users-table td:nth-child(4) { display: none; }
+}
+
 /* Lista de usuarios */
 .user-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
 .user-row:last-of-type { border-bottom: none; }

@@ -60,64 +60,9 @@
       tag.textContent = "● " + (prof.name || user.email) + " · " + rol;
       tag.className = "admin-mode-tag" + (prof.role === "admin" ? " cloud" : "");
     }
-    // El botón de gestión de usuarios solo lo ve el admin
+    // El enlace a la vista de usuarios solo lo ve el admin
     if ($("usersBtn")) $("usersBtn").style.display = (prof.role === "admin") ? "" : "none";
   }
-
-  /* ---------- Gestión de usuarios (solo admin) ---------- */
-  function openUsers() { loadUsers(); $("usersOverlay").hidden = false; }
-  function closeUsers() { $("usersOverlay").hidden = true; }
-  if ($("usersBtn")) $("usersBtn").addEventListener("click", openUsers);
-  if ($("usersClose")) $("usersClose").addEventListener("click", closeUsers);
-  if ($("usersOverlay")) $("usersOverlay").addEventListener("click", (e) => { if (e.target === $("usersOverlay")) closeUsers(); });
-
-  async function loadUsers() {
-    const list = $("usersList");
-    const { data, error } = await sb.from("profiles").select("id,email,name,role").order("created_at", { ascending: true });
-    if (error) { list.innerHTML = "<p class='deal-contact'>" + esc(error.message) + "</p>"; return; }
-    list.innerHTML = (data || []).map((p) => {
-      const you = (PROFILE && p.id === PROFILE.id) ? `<span class="user-you">(tú)</span>` : "";
-      return `<div class="user-row">
-        <div><span class="u-name">${esc(p.name || p.email)}</span>${you}<div class="u-email">${esc(p.email)}</div></div>
-        <select class="u-role" data-uid="${p.id}">
-          <option value="comercial"${p.role !== "admin" ? " selected" : ""}>Comercial</option>
-          <option value="admin"${p.role === "admin" ? " selected" : ""}>Admin</option>
-        </select>
-      </div>`;
-    }).join("");
-    list.querySelectorAll(".u-role").forEach((sel) => {
-      sel.addEventListener("change", async () => {
-        const { error } = await sb.from("profiles").update({ role: sel.value }).eq("id", sel.dataset.uid);
-        if (error) toast("Error: " + error.message, true); else toast("Rol actualizado ✔");
-      });
-    });
-  }
-
-  if ($("newUserForm")) $("newUserForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = $("nu-name").value.trim(), email = $("nu-email").value.trim();
-    const pass = $("nu-pass").value, role = $("nu-role").value;
-    const st = $("newUserStatus");
-    st.className = "form-status"; st.textContent = "Creando usuario...";
-    try {
-      // Cliente temporal: crea la cuenta sin cerrar la sesión del admin
-      const tmp = window.supabase.createClient(CFG.url, CFG.anonKey, {
-        auth: { persistSession: false, autoRefreshToken: false, storageKey: "ts_tmp_signup" }
-      });
-      const { data, error } = await tmp.auth.signUp({ email, password: pass, options: { data: { name } } });
-      if (error) throw error;
-      if (role === "admin" && data.user) {
-        await sb.from("profiles").update({ role: "admin", name }).eq("id", data.user.id);
-      }
-      st.className = "form-status ok";
-      st.textContent = "✔ Usuario creado: " + email + "  (entrega esta contraseña al comercial)";
-      $("newUserForm").reset();
-      await loadUsers();
-    } catch (err) {
-      st.className = "form-status err";
-      st.textContent = "Error: " + (err.message || err);
-    }
-  });
 
   $("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
