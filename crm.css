@@ -47,6 +47,14 @@
 .modal-actions { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
 .modal-card .field select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; font: inherit; background: var(--bg-alt); }
 
+/* Lista de usuarios */
+.user-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.user-row:last-of-type { border-bottom: none; }
+.user-row .u-name { font-weight: 600; }
+.user-row .u-email { font-size: .82rem; color: var(--muted); }
+.user-row select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--bg-alt); }
+.user-you { font-size: .72rem; font-weight: 700; color: var(--accent); margin-left: 6px; }
+
 @media (max-width: 600px) {
   .crm-col { flex-basis: 80%; }
   .modal-card .grid-2 { grid-template-columns: 1fr; }

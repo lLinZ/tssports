@@ -41,6 +41,7 @@
       </div>
       <div class="admin-bar admin-bar-actions">
         <span class="admin-bar-title">CRM de Patrocinios</span>
+        <button class="btn btn-ghost btn-sm" id="usersBtn" style="display:none"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Usuarios</button>
         <button class="btn btn-text" id="refreshBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Actualizar</button>
         <button class="btn btn-primary btn-sm" id="addBtn"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Nueva oportunidad</button>
       </div>
@@ -87,6 +88,32 @@
         <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
       </div>
     </form>
+  </div>
+
+  <!-- ===== Modal de usuarios (solo admin) ===== -->
+  <div class="modal-overlay" id="usersOverlay" hidden>
+    <div class="modal-card">
+      <h2>Comerciales y usuarios</h2>
+      <p class="panel-desc" style="margin-bottom:14px">Crea las cuentas de tus comerciales. Cada uno entrará con su email y contraseña y verá solo sus marcas.</p>
+      <div id="usersList"></div>
+      <h3 style="margin:18px 0 12px;font-size:1.02rem">Crear nuevo usuario</h3>
+      <form id="newUserForm">
+        <div class="grid-2">
+          <div class="field"><label>Nombre</label><input type="text" id="nu-name" required /></div>
+          <div class="field"><label>Rol</label><select id="nu-role"><option value="comercial">Comercial</option><option value="admin">Admin</option></select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Email</label><input type="email" id="nu-email" required /></div>
+          <div class="field"><label>Contraseña</label><input type="text" id="nu-pass" required minlength="6" placeholder="mínimo 6 caracteres" /></div>
+        </div>
+        <div class="modal-actions">
+          <div style="flex:1"></div>
+          <button type="button" class="btn btn-text" id="usersClose">Cerrar</button>
+          <button type="submit" class="btn btn-primary btn-sm">Crear usuario</button>
+        </div>
+        <p class="form-status" id="newUserStatus" style="text-align:left"></p>
+      </form>
+    </div>
   </div>
 
   <div class="save-toast" id="toast"></div>
