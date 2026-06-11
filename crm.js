@@ -84,85 +84,112 @@
     render();
   }
 
+  /* ---------- Avance ---------- */
+  const CHECK = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  function avanceKey(d) {
+    if (d.st_aproximacion && d.st_prospeccion && d.st_propuesta) return "completa";
+    if (d.st_propuesta) return "propuesta";
+    if (d.st_prospeccion) return "prospeccion";
+    if (d.st_aproximacion) return "aproximacion";
+    return "sin";
+  }
+
   /* ---------- Render ---------- */
   function render() {
-    // Métricas
-    const open = DEALS.filter((d) => d.stage !== "ganado" && d.stage !== "perdido");
-    const pipeline = open.reduce((s, d) => s + (Number(d.value) || 0), 0);
-    const won = DEALS.filter((d) => d.stage === "ganado").reduce((s, d) => s + (Number(d.value) || 0), 0);
+    const totalVal = DEALS.reduce((s, d) => s + (Number(d.value) || 0), 0);
+    const completas = DEALS.filter((d) => avanceKey(d) === "completa").length;
     $("crmStats").innerHTML =
-      `<div class="crm-stat"><div class="cs-num">${DEALS.length}</div><div class="cs-label">Oportunidades</div></div>
-       <div class="crm-stat pipe"><div class="cs-num">${money(pipeline)}</div><div class="cs-label">En pipeline</div></div>
-       <div class="crm-stat win"><div class="cs-num">${money(won)}</div><div class="cs-label">Ganado</div></div>`;
-
-    // Columnas
-    $("crmBoard").innerHTML = STAGES.map((st) => {
-      const items = DEALS.filter((d) => d.stage === st.key);
-      const sum = items.reduce((s, d) => s + (Number(d.value) || 0), 0);
-      const cards = items.length
-        ? items.map(cardHtml).join("")
-        : `<div class="deal-empty">Sin oportunidades</div>`;
-      return `<div class="crm-col" data-stage="${st.key}">
-        <div class="crm-col-head">
-          <h3><span class="crm-col-dot" style="background:${st.color}"></span>${st.label}</h3>
-          <span class="crm-col-count">${items.length}</span>
-        </div>
-        <div class="crm-col-sum">${money(sum)}</div>
-        ${cards}
-      </div>`;
-    }).join("");
-
-    bindDnD();
+      `<div class="crm-stat"><div class="cs-num">${DEALS.length}</div><div class="cs-label">Marcas</div></div>
+       <div class="crm-stat pipe"><div class="cs-num">${money(totalVal)}</div><div class="cs-label">Valor total / año</div></div>
+       <div class="crm-stat win"><div class="cs-num">${completas}</div><div class="cs-label">Completadas</div></div>`;
+    renderGrid();
   }
 
-  function cardHtml(d) {
+  function renderGrid() {
+    const q = ($("fSearch").value || "").toLowerCase().trim();
+    const av = $("fAvance").value;
+    const sort = $("fSort").value;
+    let items = DEALS.slice();
+    if (q) items = items.filter((d) => (d.brand || "").toLowerCase().includes(q) || (d.contact || "").toLowerCase().includes(q));
+    if (av) items = items.filter((d) => avanceKey(d) === av);
+    items.sort((a, b) => {
+      if (sort === "value-desc") return (b.value || 0) - (a.value || 0);
+      if (sort === "value-asc") return (a.value || 0) - (b.value || 0);
+      if (sort === "name") return (a.brand || "").localeCompare(b.brand || "");
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+    const grid = $("crmBoard");
+    if (!items.length) { grid.innerHTML = `<div class="brand-empty">No hay marcas que coincidan.</div>`; return; }
+    grid.innerHTML = items.map(brandCard).join("");
+  }
+
+  function brandCard(d) {
+    const logo = d.logo
+      ? `<img src="${esc(d.logo)}" alt="${esc(d.brand)}" />`
+      : `<div class="logo-ph">${esc((d.brand || "?").trim().charAt(0).toUpperCase())}</div>`;
+    const stage = (key, label) => {
+      const on = !!d["st_" + key];
+      return `<span class="bs-item ${on ? "done" : ""}" data-toggle="${key}"><span class="bs-dot">${on ? CHECK : ""}</span>${label}</span>`;
+    };
     const src = d.source === "web" ? `<span class="deal-source">Web</span>` : "";
-    const userIc = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-    const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name) ? `<div class="deal-contact">${userIc} ${esc(d.owner_name)}</div>` : "";
-    return `<div class="deal-card" draggable="true" data-id="${d.id}">
-      <div class="deal-brand">${esc(d.brand) || "(sin nombre)"}</div>
-      ${d.contact ? `<div class="deal-contact">${esc(d.contact)}</div>` : ""}
-      ${owner}
-      <div class="deal-meta">
-        <span class="deal-value">${d.value ? money(d.value) : "—"}</span>
-        ${src}
+    const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name)
+      ? `<span class="brand-owner"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(d.owner_name)}</span>` : "";
+    return `<article class="brand-card" data-id="${d.id}">
+      ${src}
+      <div class="brand-logo">${logo}</div>
+      <div class="brand-name">${esc(d.brand) || "(sin nombre)"}</div>
+      <div class="brand-stages">
+        ${stage("aproximacion", "Aproximación")}
+        ${stage("prospeccion", "Prospección")}
+        ${stage("propuesta", "Propuesta")}
       </div>
-    </div>`;
+      <div class="brand-foot">
+        <span class="brand-value">${d.value ? money(d.value) + " /año" : "—"}</span>
+        ${owner}
+      </div>
+    </article>`;
   }
 
-  /* ---------- Drag & Drop ---------- */
-  let draggingId = null;
-  function bindDnD() {
-    document.querySelectorAll(".deal-card").forEach((card) => {
-      card.addEventListener("dragstart", () => { draggingId = card.dataset.id; card.classList.add("dragging"); });
-      card.addEventListener("dragend", () => { card.classList.remove("dragging"); draggingId = null; });
-      card.addEventListener("click", () => openModal(DEALS.find((d) => d.id === card.dataset.id)));
-    });
-    document.querySelectorAll(".crm-col").forEach((col) => {
-      col.addEventListener("dragover", (e) => { e.preventDefault(); col.classList.add("drop-hover"); });
-      col.addEventListener("dragleave", () => col.classList.remove("drop-hover"));
-      col.addEventListener("drop", async (e) => {
-        e.preventDefault(); col.classList.remove("drop-hover");
-        const id = draggingId; const stage = col.dataset.stage;
-        if (!id) return;
-        const deal = DEALS.find((d) => d.id === id);
-        if (!deal || deal.stage === stage) return;
-        deal.stage = stage; render(); // optimista
-        const { error } = await sb.from("deals").update({ stage, updated_at: new Date().toISOString() }).eq("id", id);
-        if (error) { toast("Error: " + error.message, true); load(); }
-      });
-    });
-  }
+  // Interacción de la cuadrícula (delegación)
+  $("crmBoard").addEventListener("click", async (e) => {
+    const toggle = e.target.closest(".bs-item");
+    const card = e.target.closest(".brand-card");
+    if (!card) return;
+    const deal = DEALS.find((d) => d.id === card.dataset.id);
+    if (!deal) return;
+    if (toggle) { // marcar/desmarcar etapa sin abrir el modal
+      e.stopPropagation();
+      const key = "st_" + toggle.dataset.toggle;
+      deal[key] = !deal[key];
+      renderGrid();
+      const upd = {}; upd[key] = deal[key]; upd.updated_at = new Date().toISOString();
+      const { error } = await sb.from("deals").update(upd).eq("id", deal.id);
+      if (error) { toast("Error: " + error.message, true); load(); } else { render(); }
+      return;
+    }
+    openModal(deal);
+  });
+  $("fSearch").addEventListener("input", renderGrid);
+  $("fAvance").addEventListener("change", renderGrid);
+  $("fSort").addEventListener("change", renderGrid);
 
   /* ---------- Modal ---------- */
+  function setLogoPreview(url) {
+    $("f-logo").value = url || "";
+    $("logoPrev").innerHTML = url ? `<img src="${esc(url)}" alt="logo" />` : "Sin logo";
+    $("logoUrl").value = url || "";
+  }
   function openModal(deal) {
     deal = deal || {};
-    $("modalTitle").textContent = deal.id ? "Editar oportunidad" : "Nueva oportunidad";
+    $("modalTitle").textContent = deal.id ? "Editar marca" : "Nueva marca";
     $("dealId").value = deal.id || "";
+    setLogoPreview(deal.logo || "");
     $("f-brand").value = deal.brand || "";
     $("f-value").value = deal.value || "";
+    $("f-st1").checked = !!deal.st_aproximacion;
+    $("f-st2").checked = !!deal.st_prospeccion;
+    $("f-st3").checked = !!deal.st_propuesta;
     $("f-contact").value = deal.contact || "";
-    $("f-stage").value = deal.stage || "nuevo";
     $("f-email").value = deal.email || "";
     $("f-phone").value = deal.phone || "";
     $("f-notes").value = deal.notes || "";
@@ -174,14 +201,33 @@
   $("cancelBtn").addEventListener("click", closeModal);
   $("modalOverlay").addEventListener("click", (e) => { if (e.target === $("modalOverlay")) closeModal(); });
 
+  // Logo: pegar URL o subir archivo
+  $("logoUrl").addEventListener("input", () => setLogoPreview($("logoUrl").value.trim()));
+  $("logoFile").addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    toast("Subiendo logo...");
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase();
+      const path = `logos/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`;
+      const { error } = await sb.storage.from("media").upload(path, file, { cacheControl: "3600" });
+      if (error) throw error;
+      const { data } = sb.storage.from("media").getPublicUrl(path);
+      setLogoPreview(data.publicUrl); toast("Logo listo ✔");
+    } catch (err) { toast("Error al subir: " + (err.message || err), true); }
+  });
+
   $("dealForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = $("dealId").value;
     const payload = {
       brand: $("f-brand").value.trim(),
+      logo: $("f-logo").value.trim(),
       value: parseFloat($("f-value").value) || 0,
+      st_aproximacion: $("f-st1").checked,
+      st_prospeccion: $("f-st2").checked,
+      st_propuesta: $("f-st3").checked,
       contact: $("f-contact").value.trim(),
-      stage: $("f-stage").value,
       email: $("f-email").value.trim(),
       phone: $("f-phone").value.trim(),
       notes: $("f-notes").value.trim(),

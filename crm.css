@@ -8,8 +8,51 @@
 .crm-stat.win .cs-num { color: var(--accent-2); }
 .crm-stat.pipe .cs-num { color: var(--accent); }
 
-/* Tablero */
-.crm-board {
+/* Filtros */
+.crm-filters { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; max-width: 1400px; margin: 0 auto; padding: 6px 22px 0; }
+.filter-search { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; color: var(--muted); flex: 1 1 240px; max-width: 360px; }
+.filter-search input { border: none; outline: none; background: none; padding: 11px 0; font: inherit; width: 100%; color: var(--ink); }
+.crm-filters select { padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; background: #fff; color: var(--ink); cursor: pointer; }
+
+/* Cuadrícula de marcas */
+.brand-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
+  padding: 18px 22px 48px; max-width: 1400px; margin: 0 auto;
+}
+.brand-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px;
+  box-shadow: var(--shadow); cursor: pointer; transition: transform .15s, box-shadow .15s; position: relative;
+}
+.brand-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.brand-logo { height: 64px; display: grid; place-items: center; margin-bottom: 12px; }
+.brand-logo img { max-height: 64px; max-width: 100%; object-fit: contain; }
+.brand-logo .logo-ph { width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center; font-family: "Sora", sans-serif; font-weight: 800; font-size: 1.4rem; color: #fff; background: linear-gradient(135deg, var(--navy), var(--accent)); }
+.brand-name { font-weight: 700; font-size: 1.02rem; text-align: center; margin-bottom: 12px; }
+.brand-stages { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.bs-item { display: flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--muted); cursor: pointer; user-select: none; }
+.bs-item .bs-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); flex: 0 0 auto; display: grid; place-items: center; transition: .15s; }
+.bs-item.done { color: var(--ink); font-weight: 600; }
+.bs-item.done .bs-dot { background: var(--accent-2); border-color: var(--accent-2); }
+.bs-item.done .bs-dot svg { stroke: #fff; }
+.brand-foot { border-top: 1px solid var(--line); padding-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.brand-value { font-family: "Sora", sans-serif; font-weight: 700; font-size: .92rem; color: var(--accent); }
+.brand-owner { font-size: .72rem; color: var(--muted); display: flex; align-items: center; gap: 3px; }
+.brand-card .deal-source { position: absolute; top: 10px; right: 10px; }
+.brand-empty { grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px 0; }
+
+/* Modal: logo + checklist */
+.logo-edit { display: flex; gap: 14px; align-items: center; }
+.logo-prev { width: 80px; height: 80px; flex: 0 0 auto; border: 1px dashed var(--line); border-radius: 12px; display: grid; place-items: center; color: var(--muted); font-size: .76rem; background: var(--bg-alt); overflow: hidden; text-align: center; }
+.logo-prev img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.logo-edit-actions { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.logo-edit-actions .file-btn { position: relative; overflow: hidden; color: var(--ink); border-color: var(--line); }
+.logo-edit-actions .file-btn input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.logo-edit-actions input[type="url"] { padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--bg-alt); }
+.stage-checks { display: flex; gap: 18px; flex-wrap: wrap; padding: 4px 0; }
+.stage-check { display: flex; align-items: center; gap: 7px; font-size: .92rem; cursor: pointer; }
+
+/* (kanban antiguo, por si queda algo) */
+.crm-board-old {
   display: flex; gap: 16px; align-items: flex-start;
   padding: 18px 22px 40px; overflow-x: auto; max-width: 1400px; margin: 0 auto;
 }
