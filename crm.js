@@ -10,6 +10,8 @@
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const money = (n) => "$" + (Number(n) || 0).toLocaleString("en-US");
+  const fdate = (s) => { try { return new Date(s).toLocaleDateString("es"); } catch (e) { return ""; } };
+  const fdatetime = (s) => { try { return new Date(s).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
 
   const STAGES = [
     { key: "nuevo", label: "Nuevo", color: "#6b7280" },
@@ -62,6 +64,17 @@
     }
     // El enlace a la vista de usuarios solo lo ve el admin
     if ($("usersBtn")) $("usersBtn").style.display = (prof.role === "admin") ? "" : "none";
+
+    // El admin puede filtrar por agente: cargamos la lista
+    if (prof.role === "admin") {
+      const { data } = await sb.from("profiles").select("id,name,email").order("name");
+      const sel = $("fAgent");
+      if (sel && data) {
+        sel.innerHTML = `<option value="">Todos los agentes</option>` +
+          data.map((p) => `<option value="${p.id}">${esc(p.name || p.email)}</option>`).join("");
+        sel.style.display = "";
+      }
+    }
   }
 
   $("loginForm").addEventListener("submit", async (e) => {
@@ -109,9 +122,11 @@
     const q = ($("fSearch").value || "").toLowerCase().trim();
     const av = $("fAvance").value;
     const sort = $("fSort").value;
+    const agent = $("fAgent") ? $("fAgent").value : "";
     let items = DEALS.slice();
     if (q) items = items.filter((d) => (d.brand || "").toLowerCase().includes(q) || (d.contact || "").toLowerCase().includes(q));
     if (av) items = items.filter((d) => avanceKey(d) === av);
+    if (agent) items = items.filter((d) => d.owner === agent);
     items.sort((a, b) => {
       if (sort === "value-desc") return (b.value || 0) - (a.value || 0);
       if (sort === "value-asc") return (a.value || 0) - (b.value || 0);
@@ -172,6 +187,7 @@
   $("fSearch").addEventListener("input", renderGrid);
   $("fAvance").addEventListener("change", renderGrid);
   $("fSort").addEventListener("change", renderGrid);
+  if ($("fAgent")) $("fAgent").addEventListener("change", renderGrid);
 
   /* ---------- Modal ---------- */
   function setLogoPreview(url) {
@@ -181,7 +197,7 @@
   }
   function openModal(deal) {
     deal = deal || {};
-    $("modalTitle").textContent = deal.id ? "Editar marca" : "Nueva marca";
+    $("modalTitle").textContent = deal.id ? (deal.brand || "Editar marca") : "Nueva marca";
     $("dealId").value = deal.id || "";
     setLogoPreview(deal.logo || "");
     $("f-brand").value = deal.brand || "";
@@ -194,8 +210,54 @@
     $("f-phone").value = deal.phone || "";
     $("f-notes").value = deal.notes || "";
     $("deleteBtn").style.display = deal.id ? "" : "none";
+
+    // ¿Quién la registró y cuándo?
+    if (deal.id) {
+      const reg = deal.source === "web" ? "Formulario web" : (deal.owner_name || "—");
+      $("dealMetaInfo").textContent = "Registrada por " + reg + (deal.created_at ? " · " + fdate(deal.created_at) : "");
+      $("commentsSection").hidden = false;
+      loadComments(deal.id);
+    } else {
+      $("dealMetaInfo").textContent = "";
+      $("commentsSection").hidden = true;
+      $("commentsList").innerHTML = "";
+    }
     $("modalOverlay").hidden = false;
   }
+
+  /* ---------- Comentarios / actividad ---------- */
+  let CURRENT_DEAL = null;
+  async function loadComments(dealId) {
+    CURRENT_DEAL = dealId;
+    const box = $("commentsList");
+    box.innerHTML = `<div class="comment-empty">Cargando...</div>`;
+    const { data, error } = await sb.from("deal_comments").select("*").eq("deal_id", dealId).order("created_at", { ascending: true });
+    if (error) { box.innerHTML = `<div class="comment-empty">${esc(error.message)}</div>`; return; }
+    if (!data || !data.length) { box.innerHTML = `<div class="comment-empty">Aún no hay comentarios. ¡Sé el primero!</div>`; return; }
+    box.innerHTML = data.map((c) => {
+      const mine = (PROFILE && c.author === PROFILE.id);
+      const del = (mine || (PROFILE && PROFILE.role === "admin")) ? `<button class="comment-del" data-cid="${c.id}">Eliminar</button>` : "";
+      return `<div class="comment">
+        <div class="comment-head"><span class="comment-author">${esc(c.author_name || "—")}</span><span class="comment-time">${fdatetime(c.created_at)} ${del}</span></div>
+        <div class="comment-body">${esc(c.body)}</div>
+      </div>`;
+    }).join("");
+    box.scrollTop = box.scrollHeight;
+    box.querySelectorAll(".comment-del").forEach((b) => b.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar comentario?")) return;
+      const { error } = await sb.from("deal_comments").delete().eq("id", b.dataset.cid);
+      if (error) toast("Error: " + error.message, true); else loadComments(CURRENT_DEAL);
+    }));
+  }
+
+  $("addCommentBtn").addEventListener("click", async () => {
+    const body = $("commentInput").value.trim();
+    if (!body || !CURRENT_DEAL) return;
+    const { error } = await sb.from("deal_comments").insert([{ deal_id: CURRENT_DEAL, body, author_name: PROFILE ? PROFILE.name : "" }]);
+    if (error) { toast("Error: " + error.message, true); return; }
+    $("commentInput").value = "";
+    loadComments(CURRENT_DEAL);
+  });
   function closeModal() { $("modalOverlay").hidden = true; }
   $("addBtn").addEventListener("click", () => openModal(null));
   $("cancelBtn").addEventListener("click", closeModal);

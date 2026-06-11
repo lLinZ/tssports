@@ -70,6 +70,7 @@
         <option value="value-asc">Menor valor</option>
         <option value="name">Nombre (A-Z)</option>
       </select>
+      <select id="fAgent" style="display:none"><option value="">Todos los agentes</option></select>
     </div>
 
     <!-- Cuadrícula de marcas -->
@@ -80,6 +81,7 @@
   <div class="modal-overlay" id="modalOverlay" hidden>
     <form class="modal-card" id="dealForm">
       <h2 id="modalTitle">Nueva marca</h2>
+      <p class="deal-meta-info" id="dealMetaInfo"></p>
       <input type="hidden" id="dealId" />
       <input type="hidden" id="f-logo" />
       <div class="field"><label>Logo de la marca</label>
@@ -113,6 +115,15 @@
         <div style="flex:1"></div>
         <button type="button" class="btn btn-text" id="cancelBtn">Cancelar</button>
         <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+      </div>
+
+      <div class="comments-section" id="commentsSection" hidden>
+        <h3>Actividad y comentarios</h3>
+        <div class="comments-list" id="commentsList"></div>
+        <div class="comment-add">
+          <textarea id="commentInput" rows="2" placeholder="Escribe un comentario sobre esta marca..."></textarea>
+          <button type="button" class="btn btn-primary btn-sm" id="addCommentBtn">Comentar</button>
+        </div>
       </div>
     </form>
   </div>
