@@ -77,55 +77,62 @@
     <div class="brand-grid" id="crmBoard"></div>
   </div>
 
-  <!-- ===== Modal ===== -->
+  <!-- ===== Modal de detalle (pantalla grande, dos columnas) ===== -->
   <div class="modal-overlay" id="modalOverlay" hidden>
-    <form class="modal-card" id="dealForm">
-      <h2 id="modalTitle">Nueva marca</h2>
-      <p class="deal-meta-info" id="dealMetaInfo"></p>
-      <input type="hidden" id="dealId" />
-      <input type="hidden" id="f-logo" />
-      <div class="field"><label>Logo de la marca</label>
-        <div class="logo-edit">
-          <div class="logo-prev" id="logoPrev">Sin logo</div>
-          <div class="logo-edit-actions">
-            <span class="btn btn-ghost btn-sm file-btn">Subir logo<input type="file" accept="image/*" id="logoFile" /></span>
-            <input type="url" id="logoUrl" placeholder="o pega una URL de imagen..." />
+    <div class="modal-card modal-detail">
+      <button type="button" class="modal-x" id="modalClose" aria-label="Cerrar">&times;</button>
+      <div class="detail-grid" id="detailGrid">
+        <!-- Columna izquierda: info de la marca -->
+        <form class="detail-left" id="dealForm">
+          <h2 id="modalTitle">Nueva marca</h2>
+          <p class="deal-meta-info" id="dealMetaInfo"></p>
+          <input type="hidden" id="dealId" />
+          <input type="hidden" id="f-logo" />
+          <div class="field"><label>Logo de la marca</label>
+            <div class="logo-edit">
+              <div class="logo-prev" id="logoPrev">Sin logo</div>
+              <div class="logo-edit-actions">
+                <span class="btn btn-ghost btn-sm file-btn">Subir logo<input type="file" accept="image/*" id="logoFile" /></span>
+                <input type="url" id="logoUrl" placeholder="o pega una URL de imagen..." />
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
-        <div class="field"><label>Valor anual (USD)</label><input type="number" id="f-value" min="0" step="100" /></div>
-      </div>
-      <div class="field"><label>Avance del proceso</label>
-        <div class="stage-checks">
-          <label class="stage-check"><input type="checkbox" id="f-st1" /> Aproximación</label>
-          <label class="stage-check"><input type="checkbox" id="f-st2" /> Prospección</label>
-          <label class="stage-check"><input type="checkbox" id="f-st3" /> Propuesta</label>
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" /></div>
-        <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
-      </div>
-      <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
-      <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-text" id="deleteBtn">Eliminar</button>
-        <div style="flex:1"></div>
-        <button type="button" class="btn btn-text" id="cancelBtn">Cancelar</button>
-        <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-      </div>
+          <div class="grid-2">
+            <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
+            <div class="field"><label>Valor anual (USD)</label><input type="number" id="f-value" min="0" step="100" /></div>
+          </div>
+          <div class="field"><label>Avance del proceso</label>
+            <div class="stage-checks">
+              <label class="stage-check"><input type="checkbox" id="f-st1" /> Aproximación</label>
+              <label class="stage-check"><input type="checkbox" id="f-st2" /> Prospección</label>
+              <label class="stage-check"><input type="checkbox" id="f-st3" /> Propuesta</label>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" /></div>
+            <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
+          </div>
+          <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
+          <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-text" id="deleteBtn">Eliminar</button>
+            <div style="flex:1"></div>
+            <button type="button" class="btn btn-text" id="cancelBtn">Cancelar</button>
+            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+          </div>
+        </form>
 
-      <div class="comments-section" id="commentsSection" hidden>
-        <h3>Actividad y comentarios</h3>
-        <div class="comments-list" id="commentsList"></div>
-        <div class="comment-add">
-          <textarea id="commentInput" rows="2" placeholder="Escribe un comentario sobre esta marca..."></textarea>
-          <button type="button" class="btn btn-primary btn-sm" id="addCommentBtn">Comentar</button>
-        </div>
+        <!-- Columna derecha: actividad y comentarios -->
+        <aside class="detail-right" id="detailRight" hidden>
+          <h3>Actividad y comentarios</h3>
+          <div class="comments-list" id="commentsList"></div>
+          <div class="comment-add">
+            <textarea id="commentInput" rows="2" placeholder="Escribe un comentario sobre esta marca..."></textarea>
+            <button type="button" class="btn btn-primary btn-sm" id="addCommentBtn">Comentar</button>
+          </div>
+        </aside>
       </div>
-    </form>
+    </div>
   </div>
 
   <div class="save-toast" id="toast"></div>

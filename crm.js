@@ -211,15 +211,17 @@
     $("f-notes").value = deal.notes || "";
     $("deleteBtn").style.display = deal.id ? "" : "none";
 
-    // ¿Quién la registró y cuándo?
+    // ¿Quién la registró y cuándo? + panel de comentarios (solo si ya existe)
     if (deal.id) {
       const reg = deal.source === "web" ? "Formulario web" : (deal.owner_name || "—");
       $("dealMetaInfo").textContent = "Registrada por " + reg + (deal.created_at ? " · " + fdate(deal.created_at) : "");
-      $("commentsSection").hidden = false;
+      $("detailRight").hidden = false;
+      $("detailGrid").classList.add("two");
       loadComments(deal.id);
     } else {
       $("dealMetaInfo").textContent = "";
-      $("commentsSection").hidden = true;
+      $("detailRight").hidden = true;
+      $("detailGrid").classList.remove("two");
       $("commentsList").innerHTML = "";
     }
     $("modalOverlay").hidden = false;
@@ -261,6 +263,7 @@
   function closeModal() { $("modalOverlay").hidden = true; }
   $("addBtn").addEventListener("click", () => openModal(null));
   $("cancelBtn").addEventListener("click", closeModal);
+  $("modalClose").addEventListener("click", closeModal);
   $("modalOverlay").addEventListener("click", (e) => { if (e.target === $("modalOverlay")) closeModal(); });
 
   // Logo: pegar URL o subir archivo
