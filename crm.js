@@ -13,27 +13,43 @@
   const fdate = (s) => { try { return new Date(s).toLocaleDateString("es"); } catch (e) { return ""; } };
   const fdatetime = (s) => { try { return new Date(s).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
 
+  /* ▼▼▼ ETAPAS DEL PIPELINE — provisional. Cuando me pases la lista definitiva,
+     solo edita este arreglo (key sin espacios/acentos, label es lo que se ve).
+     STAGE_WON = la etapa que cuenta como "ganada" en las métricas. ▼▼▼ */
   const STAGES = [
-    { key: "nuevo", label: "Nuevo", color: "#6b7280" },
-    { key: "contactado", label: "Contactado", color: "#3b82f6" },
-    { key: "propuesta", label: "Propuesta", color: "#8b5cf6" },
-    { key: "negociacion", label: "Negociación", color: "#f59e0b" },
-    { key: "ganado", label: "Ganado", color: "#16c79a" },
-    { key: "perdido", label: "Perdido", color: "#ef4444" }
+    { key: "nuevo",        label: "Nuevo",        color: "#6b7280" },
+    { key: "aproximacion", label: "Aproximación", color: "#3b82f6" },
+    { key: "seguimiento",  label: "Seguimiento",  color: "#0ea5e9" },
+    { key: "propuesta",    label: "Propuesta",    color: "#8b5cf6" },
+    { key: "negociacion",  label: "Negociación",  color: "#f59e0b" },
+    { key: "ganado",       label: "Ganado",       color: "#16c79a" },
+    { key: "perdido",      label: "Perdido",      color: "#ef4444" }
   ];
+  const STAGE_WON = "ganado";
+  /* ▲▲▲ ▲▲▲ */
+  const stageMeta = (key) => STAGES.find((s) => s.key === key) || STAGES[0];
+  const stageOptions = (sel) => STAGES.map((s) => `<option value="${s.key}"${s.key === sel ? " selected" : ""}>${esc(s.label)}</option>`).join("");
 
   let DEALS = [];
+  let DEAL_QUOTE_TOTALS = {}; // deal_id -> suma de cotizaciones
   let PROFILE = null; // { id, name, role }
 
   /* ---------- Auth ---------- */
   async function boot() {
+    // Llenamos los desplegables de etapa antes de pintar nada
+    $("f-stage").innerHTML = stageOptions("nuevo");
+    $("fStage").innerHTML = `<option value="">Todos los estatus</option>` + stageOptions(null);
+
     if (!HAS_CLOUD) {
       $("loginMode").textContent = "Supabase no está configurado (config.js). El CRM necesita la nube para funcionar.";
+      showLogin();
       return;
     }
     $("loginMode").textContent = "Conectado a Supabase. Usa el mismo email y contraseña del panel.";
-    const { data } = await sb.auth.getUser();
-    if (data && data.user) showApp(); else showLogin();
+    // getSession() lee la sesión guardada localmente (sin llamada al servidor),
+    // así no se ve el login un instante cuando ya hay sesión iniciada.
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) showApp(); else showLogin();
   }
   function showLogin() { $("crmApp").hidden = true; $("loginScreen").style.display = "grid"; }
   async function showApp() {
@@ -44,8 +60,8 @@
 
   // Carga el perfil (rol + nombre) del usuario logueado
   async function loadProfile() {
-    const { data: u } = await sb.auth.getUser();
-    const user = u && u.user;
+    const { data: s } = await sb.auth.getSession();
+    const user = s && s.session && s.session.user;
     if (!user) return;
     let prof = null;
     const { data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle();
@@ -91,41 +107,42 @@
 
   /* ---------- Datos ---------- */
   async function load() {
-    const { data, error } = await sb.from("deals").select("*").order("created_at", { ascending: false });
-    if (error) { toast("Error al cargar: " + error.message, true); return; }
-    DEALS = data || [];
+    const [deals, quotes] = await Promise.all([
+      sb.from("deals").select("*").order("created_at", { ascending: false }),
+      sb.from("deal_quotes").select("deal_id, amount")
+    ]);
+    if (deals.error) { toast("Error al cargar: " + deals.error.message, true); return; }
+    DEALS = deals.data || [];
+    DEAL_QUOTE_TOTALS = {};
+    if (!quotes.error) (quotes.data || []).forEach((q) => {
+      DEAL_QUOTE_TOTALS[q.deal_id] = (DEAL_QUOTE_TOTALS[q.deal_id] || 0) + (Number(q.amount) || 0);
+    });
     render();
   }
 
-  /* ---------- Avance ---------- */
-  const CHECK = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-  function avanceKey(d) {
-    if (d.st_aproximacion && d.st_prospeccion && d.st_propuesta) return "completa";
-    if (d.st_propuesta) return "propuesta";
-    if (d.st_prospeccion) return "prospeccion";
-    if (d.st_aproximacion) return "aproximacion";
-    return "sin";
-  }
+  const dealStage = (d) => (d.stage && STAGES.some((s) => s.key === d.stage)) ? d.stage : "nuevo";
 
   /* ---------- Render ---------- */
   function render() {
     const totalVal = DEALS.reduce((s, d) => s + (Number(d.value) || 0), 0);
-    const completas = DEALS.filter((d) => avanceKey(d) === "completa").length;
+    const totalQuoted = Object.values(DEAL_QUOTE_TOTALS).reduce((s, n) => s + n, 0);
+    const ganadas = DEALS.filter((d) => dealStage(d) === STAGE_WON).length;
     $("crmStats").innerHTML =
       `<div class="crm-stat"><div class="cs-num">${DEALS.length}</div><div class="cs-label">Marcas</div></div>
        <div class="crm-stat pipe"><div class="cs-num">${money(totalVal)}</div><div class="cs-label">Valor total / año</div></div>
-       <div class="crm-stat win"><div class="cs-num">${completas}</div><div class="cs-label">Completadas</div></div>`;
+       <div class="crm-stat quote"><div class="cs-num">${money(totalQuoted)}</div><div class="cs-label">Total cotizado</div></div>
+       <div class="crm-stat win"><div class="cs-num">${ganadas}</div><div class="cs-label">Ganadas</div></div>`;
     renderGrid();
   }
 
   function renderGrid() {
     const q = ($("fSearch").value || "").toLowerCase().trim();
-    const av = $("fAvance").value;
+    const st = $("fStage").value;
     const sort = $("fSort").value;
     const agent = $("fAgent") ? $("fAgent").value : "";
     let items = DEALS.slice();
     if (q) items = items.filter((d) => (d.brand || "").toLowerCase().includes(q) || (d.contact || "").toLowerCase().includes(q));
-    if (av) items = items.filter((d) => avanceKey(d) === av);
+    if (st) items = items.filter((d) => dealStage(d) === st);
     if (agent) items = items.filter((d) => d.owner === agent);
     items.sort((a, b) => {
       if (sort === "value-desc") return (b.value || 0) - (a.value || 0);
@@ -142,10 +159,7 @@
     const logo = d.logo
       ? `<img src="${esc(d.logo)}" alt="${esc(d.brand)}" />`
       : `<div class="logo-ph">${esc((d.brand || "?").trim().charAt(0).toUpperCase())}</div>`;
-    const stage = (key, label) => {
-      const on = !!d["st_" + key];
-      return `<span class="bs-item ${on ? "done" : ""}" data-toggle="${key}"><span class="bs-dot">${on ? CHECK : ""}</span>${label}</span>`;
-    };
+    const sm = stageMeta(dealStage(d));
     const src = d.source === "web" ? `<span class="deal-source">Web</span>` : "";
     const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name)
       ? `<span class="brand-owner"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(d.owner_name)}</span>` : "";
@@ -154,9 +168,7 @@
       <div class="brand-logo">${logo}</div>
       <div class="brand-name">${esc(d.brand) || "(sin nombre)"}</div>
       <div class="brand-stages">
-        ${stage("aproximacion", "Aproximación")}
-        ${stage("prospeccion", "Prospección")}
-        ${stage("propuesta", "Propuesta")}
+        <span class="stage-pill" style="--st:${sm.color}">${esc(sm.label)}</span>
       </div>
       <div class="brand-foot">
         <span class="brand-value">${d.value ? money(d.value) + " /año" : "—"}</span>
@@ -166,26 +178,14 @@
   }
 
   // Interacción de la cuadrícula (delegación)
-  $("crmBoard").addEventListener("click", async (e) => {
-    const toggle = e.target.closest(".bs-item");
+  $("crmBoard").addEventListener("click", (e) => {
     const card = e.target.closest(".brand-card");
     if (!card) return;
     const deal = DEALS.find((d) => d.id === card.dataset.id);
-    if (!deal) return;
-    if (toggle) { // marcar/desmarcar etapa sin abrir el modal
-      e.stopPropagation();
-      const key = "st_" + toggle.dataset.toggle;
-      deal[key] = !deal[key];
-      renderGrid();
-      const upd = {}; upd[key] = deal[key]; upd.updated_at = new Date().toISOString();
-      const { error } = await sb.from("deals").update(upd).eq("id", deal.id);
-      if (error) { toast("Error: " + error.message, true); load(); } else { render(); }
-      return;
-    }
-    openModal(deal);
+    if (deal) openModal(deal);
   });
   $("fSearch").addEventListener("input", renderGrid);
-  $("fAvance").addEventListener("change", renderGrid);
+  $("fStage").addEventListener("change", renderGrid);
   $("fSort").addEventListener("change", renderGrid);
   if ($("fAgent")) $("fAgent").addEventListener("change", renderGrid);
 
@@ -202,9 +202,7 @@
     setLogoPreview(deal.logo || "");
     $("f-brand").value = deal.brand || "";
     $("f-value").value = deal.value || "";
-    $("f-st1").checked = !!deal.st_aproximacion;
-    $("f-st2").checked = !!deal.st_prospeccion;
-    $("f-st3").checked = !!deal.st_propuesta;
+    $("f-stage").value = dealStage(deal);
     $("f-contact").value = deal.contact || "";
     $("f-email").value = deal.email || "";
     $("f-phone").value = deal.phone || "";
@@ -289,9 +287,7 @@
       brand: $("f-brand").value.trim(),
       logo: $("f-logo").value.trim(),
       value: parseFloat($("f-value").value) || 0,
-      st_aproximacion: $("f-st1").checked,
-      st_prospeccion: $("f-st2").checked,
-      st_propuesta: $("f-st3").checked,
+      stage: $("f-stage").value,
       contact: $("f-contact").value.trim(),
       email: $("f-email").value.trim(),
       phone: $("f-phone").value.trim(),

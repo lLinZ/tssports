@@ -13,8 +13,8 @@
 </head>
 <body class="admin-body">
 
-  <!-- ===== Login ===== -->
-  <section class="login-screen" id="loginScreen">
+  <!-- ===== Login ===== (oculto hasta saber si hay sesión, para evitar el parpadeo) -->
+  <section class="login-screen" id="loginScreen" style="display:none">
     <form class="login-card" id="loginForm">
       <div class="brand brand-login"><span class="brand-mark">TS</span><span class="brand-name">Sports</span></div>
       <h1>CRM de Patrocinios</h1>
@@ -56,14 +56,7 @@
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="fSearch" placeholder="Buscar marca..." />
       </div>
-      <select id="fAvance">
-        <option value="">Todo el avance</option>
-        <option value="sin">Sin iniciar</option>
-        <option value="aproximacion">Aproximación</option>
-        <option value="prospeccion">Prospección</option>
-        <option value="propuesta">Propuesta</option>
-        <option value="completa">Completadas</option>
-      </select>
+      <select id="fStage"><option value="">Todos los estatus</option></select>
       <select id="fSort">
         <option value="recent">Más recientes</option>
         <option value="value-desc">Mayor valor</option>
@@ -101,19 +94,29 @@
             <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
             <div class="field"><label>Valor anual (USD)</label><input type="number" id="f-value" min="0" step="100" /></div>
           </div>
-          <div class="field"><label>Avance del proceso</label>
-            <div class="stage-checks">
-              <label class="stage-check"><input type="checkbox" id="f-st1" /> Aproximación</label>
-              <label class="stage-check"><input type="checkbox" id="f-st2" /> Prospección</label>
-              <label class="stage-check"><input type="checkbox" id="f-st3" /> Propuesta</label>
-            </div>
+          <div class="grid-2">
+            <div class="field"><label>Estatus / etapa</label><select id="f-stage"></select></div>
+            <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" placeholder="Con quién se cierra el negocio" /></div>
           </div>
           <div class="grid-2">
-            <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" /></div>
             <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
+            <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
           </div>
-          <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
           <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
+
+          <!-- Cotizaciones / propuestas enviadas (solo en marcas ya guardadas) -->
+          <div class="field deal-quotes" id="quotesBlock" hidden>
+            <label>Cotizaciones / propuestas enviadas</label>
+            <div class="quotes-list" id="quotesList"></div>
+            <div class="quotes-total" id="quotesTotal"></div>
+            <div class="quote-add">
+              <input type="text" id="qConcept" placeholder="Concepto (ej. Propuesta económica)" />
+              <input type="number" id="qAmount" min="0" step="100" placeholder="Monto USD" />
+              <span class="btn btn-ghost btn-sm file-btn" id="qFileBtn">Adjuntar<input type="file" id="qFile" /></span>
+              <button type="button" class="btn btn-primary btn-sm" id="addQuoteBtn">Agregar</button>
+            </div>
+            <span class="quote-file-name" id="qFileName"></span>
+          </div>
           <div class="modal-actions">
             <button type="button" class="btn btn-text" id="deleteBtn">Eliminar</button>
             <div style="flex:1"></div>

@@ -138,8 +138,10 @@
     if (!HAS_CLOUD) {
       return sessionStorage.getItem("ts_local_admin") ? { email: "local@admin" } : null;
     }
-    const { data } = await sb.auth.getUser();
-    return data ? data.user : null;
+    // getSession() lee la sesión guardada localmente (sin llamada al servidor):
+    // así no se ve el login un instante al cargar cuando ya hay sesión iniciada.
+    const { data } = await sb.auth.getSession();
+    return data && data.session ? data.session.user : null;
   }
 
   window.TS_STORE = {

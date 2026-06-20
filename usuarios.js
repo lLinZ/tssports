@@ -16,8 +16,9 @@
   async function boot() {
     if (!HAS_CLOUD) { $("loginMode").textContent = "Supabase no está configurado (config.js)."; return; }
     $("loginMode").textContent = "Usa el email y la contraseña de administrador.";
-    const { data } = await sb.auth.getUser();
-    if (data && data.user) showApp(); else showLogin();
+    // getSession() lee la sesión local (sin llamada al servidor): evita el parpadeo del login.
+    const { data } = await sb.auth.getSession();
+    if (data && data.session) showApp(); else showLogin();
   }
   function showLogin() { $("usersApp").hidden = true; $("loginScreen").style.display = "grid"; }
   async function showApp() {
@@ -26,8 +27,8 @@
   }
 
   async function loadProfile() {
-    const { data: u } = await sb.auth.getUser();
-    const user = u && u.user;
+    const { data: u } = await sb.auth.getSession();
+    const user = u && u.session && u.session.user;
     if (!user) return;
     const { data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle();
     PROFILE = data || { id: user.id, name: (user.email || "").split("@")[0], role: "comercial" };
