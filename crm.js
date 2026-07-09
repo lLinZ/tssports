@@ -1,5 +1,5 @@
 /* =====================================================================
-   CRM de Patrocinios — tablero Kanban sobre Supabase.
+   CRM de Patrocinios — dashboard de marcas sobre Supabase.
    Reutiliza config.js (mismas claves del proyecto).
    ===================================================================== */
 (function () {
@@ -13,32 +13,46 @@
   const fdate = (s) => { try { return new Date(s).toLocaleDateString("es"); } catch (e) { return ""; } };
   const fdatetime = (s) => { try { return new Date(s).toLocaleString("es", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
 
-  /* ▼▼▼ ETAPAS DEL PIPELINE — provisional. Cuando me pases la lista definitiva,
-     solo edita este arreglo (key sin espacios/acentos, label es lo que se ve).
-     STAGE_WON = la etapa que cuenta como "ganada" en las métricas. ▼▼▼ */
-  const STAGES = [
-    { key: "nuevo",        label: "Nuevo",        color: "#6b7280" },
-    { key: "aproximacion", label: "Aproximación", color: "#3b82f6" },
-    { key: "seguimiento",  label: "Seguimiento",  color: "#0ea5e9" },
-    { key: "propuesta",    label: "Propuesta",    color: "#8b5cf6" },
-    { key: "negociacion",  label: "Negociación",  color: "#f59e0b" },
-    { key: "ganado",       label: "Ganado",       color: "#16c79a" },
-    { key: "perdido",      label: "Perdido",      color: "#ef4444" }
-  ];
-  const STAGE_WON = "ganado";
+  /* ▼▼▼ MODELO DEL CLIENTE — fases sí/no + zonas de prospectores.
+     Prospección: la marca está cargada con sus datos obligatorios
+                  (contacto, cargo, email y logo). Se calcula sola.
+     Aproximación: estatus sí/no + vía (Conocido / WhatsApp).
+     Propuesta:    estatus sí/no + descripción obligatoria.
+     Valor:        100% del valor de la propuesta pasada. ▼▼▼ */
+  const ZONAS = ["Caracas", "Centro", "Lara", "Andes-Zulia", "Oriente"];
+  const FASE_COLORS = { aprox: "#3b82f6", prosp: "#f59e0b", prop: "#16c79a" };
   /* ▲▲▲ ▲▲▲ */
-  const stageMeta = (key) => STAGES.find((s) => s.key === key) || STAGES[0];
-  const stageOptions = (sel) => STAGES.map((s) => `<option value="${s.key}"${s.key === sel ? " selected" : ""}>${esc(s.label)}</option>`).join("");
+
+  const CHECK = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  // ¿Qué datos obligatorios de Prospección le faltan a la marca?
+  function prospFaltan(d) {
+    const faltan = [];
+    if (!(d.brand || "").trim()) faltan.push("marca");
+    if (!(d.contact || "").trim()) faltan.push("contacto");
+    if (!(d.cargo || "").trim()) faltan.push("cargo");
+    if (!(d.email || "").trim()) faltan.push("email");
+    if (!(d.logo || "").trim()) faltan.push("logo");
+    return faltan;
+  }
+  const prospOk = (d) => prospFaltan(d).length === 0;
+
+  function avanceKey(d) {
+    const prosp = prospOk(d);
+    if (d.st_aproximacion && prosp && d.st_propuesta) return "completa";
+    if (d.st_propuesta) return "propuesta";
+    if (prosp) return "prospeccion";
+    if (d.st_aproximacion) return "aproximacion";
+    return "sin";
+  }
 
   let DEALS = [];
-  let DEAL_QUOTE_TOTALS = {}; // deal_id -> suma de cotizaciones
-  let PROFILE = null; // { id, name, role }
+  let PROFILE = null; // { id, name, role, zona }
 
   /* ---------- Auth ---------- */
   async function boot() {
-    // Llenamos los desplegables de etapa antes de pintar nada
-    $("f-stage").innerHTML = stageOptions("nuevo");
-    $("fStage").innerHTML = `<option value="">Todos los estatus</option>` + stageOptions(null);
+    // Zonas en el select del modal (el filtro fZona se llena al saber el rol)
+    $("f-zona").innerHTML = `<option value="">Sin zona</option>` + ZONAS.map((z) => `<option value="${z}">${z}</option>`).join("");
 
     if (!HAS_CLOUD) {
       $("loginMode").textContent = "Supabase no está configurado (config.js). El CRM necesita la nube para funcionar.";
@@ -58,36 +72,42 @@
     await load();
   }
 
-  // Carga el perfil (rol + nombre) del usuario logueado
+  // Carga el perfil (rol + nombre + zona) del usuario logueado
   async function loadProfile() {
     const { data: s } = await sb.auth.getSession();
     const user = s && s.session && s.session.user;
     if (!user) return;
     let prof = null;
-    const { data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle();
+    const { data } = await sb.from("profiles").select("id,name,role,zona").eq("id", user.id).maybeSingle();
     prof = data;
     if (!prof) { // por si el trigger aún no creó el perfil
       const name = (user.email || "").split("@")[0];
       await sb.from("profiles").upsert({ id: user.id, email: user.email, name }).select();
-      prof = { id: user.id, name, role: "comercial" };
+      prof = { id: user.id, name, role: "comercial", zona: "" };
     }
     PROFILE = prof;
     const tag = $("userTag");
     if (tag) {
       const rol = prof.role === "admin" ? "Admin" : "Comercial";
-      tag.textContent = "● " + (prof.name || user.email) + " · " + rol;
+      tag.textContent = "● " + (prof.name || user.email) + " · " + rol + (prof.zona ? " · " + prof.zona : "");
       tag.className = "admin-mode-tag" + (prof.role === "admin" ? " cloud" : "");
     }
     // El enlace a la vista de usuarios solo lo ve el admin
     if ($("usersBtn")) $("usersBtn").style.display = (prof.role === "admin") ? "" : "none";
 
-    // El admin puede filtrar por agente: cargamos la lista
+    // El admin puede filtrar por agente y por zona, y editar la zona de una marca
     if (prof.role === "admin") {
-      const { data } = await sb.from("profiles").select("id,name,email").order("name");
+      $("f-zona").disabled = false;
+      const fz = $("fZona");
+      fz.innerHTML = `<option value="">Todas las zonas</option>` +
+        ZONAS.map((z) => `<option value="${z}">${z}</option>`).join("") +
+        `<option value="__sin">Sin zona</option>`;
+      fz.style.display = "";
+      const { data } = await sb.from("profiles").select("id,name,email,zona").order("name");
       const sel = $("fAgent");
       if (sel && data) {
         sel.innerHTML = `<option value="">Todos los agentes</option>` +
-          data.map((p) => `<option value="${p.id}">${esc(p.name || p.email)}</option>`).join("");
+          data.map((p) => `<option value="${p.id}">${esc(p.name || p.email)}${p.zona ? " — " + esc(p.zona) : ""}</option>`).join("");
         sel.style.display = "";
       }
     }
@@ -107,42 +127,68 @@
 
   /* ---------- Datos ---------- */
   async function load() {
-    const [deals, quotes] = await Promise.all([
-      sb.from("deals").select("*").order("created_at", { ascending: false }),
-      sb.from("deal_quotes").select("deal_id, amount")
-    ]);
-    if (deals.error) { toast("Error al cargar: " + deals.error.message, true); return; }
-    DEALS = deals.data || [];
-    DEAL_QUOTE_TOTALS = {};
-    if (!quotes.error) (quotes.data || []).forEach((q) => {
-      DEAL_QUOTE_TOTALS[q.deal_id] = (DEAL_QUOTE_TOTALS[q.deal_id] || 0) + (Number(q.amount) || 0);
-    });
+    const { data, error } = await sb.from("deals").select("*").order("created_at", { ascending: false });
+    if (error) { toast("Error al cargar: " + error.message, true); return; }
+    DEALS = data || [];
     render();
   }
 
-  const dealStage = (d) => (d.stage && STAGES.some((s) => s.key === d.stage)) ? d.stage : "nuevo";
-
   /* ---------- Render ---------- */
   function render() {
-    const totalVal = DEALS.reduce((s, d) => s + (Number(d.value) || 0), 0);
-    const totalQuoted = Object.values(DEAL_QUOTE_TOTALS).reduce((s, n) => s + n, 0);
-    const ganadas = DEALS.filter((d) => dealStage(d) === STAGE_WON).length;
+    const aprox = DEALS.filter((d) => d.st_aproximacion).length;
+    const prosp = DEALS.filter(prospOk).length;
+    const props = DEALS.filter((d) => d.st_propuesta).length;
+    const valorProps = DEALS.reduce((s, d) => s + (d.st_propuesta ? (Number(d.value) || 0) : 0), 0);
     $("crmStats").innerHTML =
       `<div class="crm-stat"><div class="cs-num">${DEALS.length}</div><div class="cs-label">Marcas</div></div>
-       <div class="crm-stat pipe"><div class="cs-num">${money(totalVal)}</div><div class="cs-label">Valor total / año</div></div>
-       <div class="crm-stat quote"><div class="cs-num">${money(totalQuoted)}</div><div class="cs-label">Total cotizado</div></div>
-       <div class="crm-stat win"><div class="cs-num">${ganadas}</div><div class="cs-label">Ganadas</div></div>`;
+       <div class="crm-stat aprox"><div class="cs-num">${aprox}</div><div class="cs-label">Aproximación</div></div>
+       <div class="crm-stat prosp"><div class="cs-num">${prosp}</div><div class="cs-label">Prospección</div></div>
+       <div class="crm-stat win"><div class="cs-num">${props}</div><div class="cs-label">Propuesta</div></div>
+       <div class="crm-stat pipe"><div class="cs-num">${money(valorProps)}</div><div class="cs-label">Valor propuestas / año</div></div>`;
+    renderZones();
     renderGrid();
+  }
+
+  // Gráfico sumario por zona: total de cada proceso (aprox/prosp/propuesta) + valor
+  function renderZones() {
+    const panel = $("zonePanel");
+    const isAdmin = PROFILE && PROFILE.role === "admin";
+    const groups = {};
+    DEALS.forEach((d) => {
+      const k = d.zona || "Sin zona";
+      const g = groups[k] || (groups[k] = { total: 0, aprox: 0, prosp: 0, prop: 0, valor: 0 });
+      g.total++;
+      if (d.st_aproximacion) g.aprox++;
+      if (prospOk(d)) g.prosp++;
+      if (d.st_propuesta) { g.prop++; g.valor += Number(d.value) || 0; }
+    });
+    // El admin siempre ve las 5 zonas (aunque estén vacías); el comercial solo las suyas
+    let keys = isAdmin ? ZONAS.slice() : [];
+    Object.keys(groups).forEach((k) => { if (!keys.includes(k)) keys.push(k); });
+    if (!keys.length) { panel.hidden = true; return; }
+    panel.hidden = false;
+    const max = Math.max(1, ...keys.map((k) => { const g = groups[k]; return g ? Math.max(g.aprox, g.prosp, g.prop) : 0; }));
+    const bar = (n, color) =>
+      `<div class="zbar-row"><div class="zbar" style="--zc:${color};width:${n ? Math.max(6, Math.round((n / max) * 100)) : 0}%"></div><span class="zbar-num">${n}</span></div>`;
+    $("zoneChart").innerHTML = keys.map((k) => {
+      const g = groups[k] || { total: 0, aprox: 0, prosp: 0, prop: 0, valor: 0 };
+      return `<div class="zone-row">
+        <div class="zone-head"><span class="zone-name">${esc(k)}</span><span class="zone-meta">${g.total} marca${g.total === 1 ? "" : "s"} · <strong>${money(g.valor)}</strong></span></div>
+        <div class="zone-bars">${bar(g.aprox, FASE_COLORS.aprox)}${bar(g.prosp, FASE_COLORS.prosp)}${bar(g.prop, FASE_COLORS.prop)}</div>
+      </div>`;
+    }).join("");
   }
 
   function renderGrid() {
     const q = ($("fSearch").value || "").toLowerCase().trim();
-    const st = $("fStage").value;
+    const av = $("fAvance").value;
     const sort = $("fSort").value;
+    const zona = $("fZona") ? $("fZona").value : "";
     const agent = $("fAgent") ? $("fAgent").value : "";
     let items = DEALS.slice();
     if (q) items = items.filter((d) => (d.brand || "").toLowerCase().includes(q) || (d.contact || "").toLowerCase().includes(q));
-    if (st) items = items.filter((d) => dealStage(d) === st);
+    if (av) items = items.filter((d) => avanceKey(d) === av);
+    if (zona) items = items.filter((d) => zona === "__sin" ? !d.zona : d.zona === zona);
     if (agent) items = items.filter((d) => d.owner === agent);
     items.sort((a, b) => {
       if (sort === "value-desc") return (b.value || 0) - (a.value || 0);
@@ -159,34 +205,63 @@
     const logo = d.logo
       ? `<img src="${esc(d.logo)}" alt="${esc(d.brand)}" />`
       : `<div class="logo-ph">${esc((d.brand || "?").trim().charAt(0).toUpperCase())}</div>`;
-    const sm = stageMeta(dealStage(d));
+    // Orden del formato del cliente: Aproximación / Prospección / Propuesta
+    const prosp = prospOk(d);
+    const fase = (key, label, on, extra) =>
+      `<span class="bs-item ${on ? "done" : ""}" data-fase="${key}"><span class="bs-dot">${on ? CHECK : ""}</span>${label}${extra || ""}</span>`;
+    const chips =
+      fase("aproximacion", "Aproximación", !!d.st_aproximacion, d.st_aproximacion && d.aprox_via ? `<em class="bs-via">${esc(d.aprox_via)}</em>` : "") +
+      fase("prospeccion", "Prospección", prosp, prosp ? "" : `<em class="bs-via">faltan datos</em>`) +
+      fase("propuesta", "Propuesta", !!d.st_propuesta);
     const src = d.source === "web" ? `<span class="deal-source">Web</span>` : "";
     const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name)
-      ? `<span class="brand-owner"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(d.owner_name)}</span>` : "";
+      ? `<span class="brand-owner"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(d.owner_name)}${d.zona ? " · " + esc(d.zona) : ""}</span>` : "";
     return `<article class="brand-card" data-id="${d.id}">
       ${src}
       <div class="brand-logo">${logo}</div>
       <div class="brand-name">${esc(d.brand) || "(sin nombre)"}</div>
-      <div class="brand-stages">
-        <span class="stage-pill" style="--st:${sm.color}">${esc(sm.label)}</span>
-      </div>
+      <div class="brand-stages">${chips}</div>
       <div class="brand-foot">
-        <span class="brand-value">${d.value ? money(d.value) + " /año" : "—"}</span>
+        <span class="brand-value">${(d.st_propuesta && d.value) ? money(d.value) + " /año" : "—"}</span>
         ${owner}
       </div>
     </article>`;
   }
 
   // Interacción de la cuadrícula (delegación)
-  $("crmBoard").addEventListener("click", (e) => {
+  $("crmBoard").addEventListener("click", async (e) => {
     const card = e.target.closest(".brand-card");
     if (!card) return;
     const deal = DEALS.find((d) => d.id === card.dataset.id);
-    if (deal) openModal(deal);
+    if (!deal) return;
+    const chip = e.target.closest(".bs-item");
+    if (chip) {
+      const kind = chip.dataset.fase;
+      if (kind === "prospeccion") { // se calcula sola: si falta algo, abrimos el detalle
+        const faltan = prospFaltan(deal);
+        if (faltan.length) toast("Para completar Prospección faltan: " + faltan.join(", "), true);
+        openModal(deal);
+        return;
+      }
+      if (kind === "propuesta" && !deal.st_propuesta && !(deal.propuesta_desc || "").trim()) {
+        toast("Describe la propuesta en la ficha para poder marcarla", true);
+        openModal(deal);
+        return;
+      }
+      const key = "st_" + kind; // marcar/desmarcar sin abrir el modal
+      deal[key] = !deal[key];
+      renderGrid();
+      const upd = {}; upd[key] = deal[key]; upd.updated_at = new Date().toISOString();
+      const { error } = await sb.from("deals").update(upd).eq("id", deal.id);
+      if (error) { toast("Error: " + error.message, true); load(); } else { render(); }
+      return;
+    }
+    openModal(deal);
   });
   $("fSearch").addEventListener("input", renderGrid);
-  $("fStage").addEventListener("change", renderGrid);
+  $("fAvance").addEventListener("change", renderGrid);
   $("fSort").addEventListener("change", renderGrid);
+  if ($("fZona")) $("fZona").addEventListener("change", renderGrid);
   if ($("fAgent")) $("fAgent").addEventListener("change", renderGrid);
 
   /* ---------- Modal ---------- */
@@ -194,20 +269,50 @@
     $("f-logo").value = url || "";
     $("logoPrev").innerHTML = url ? `<img src="${esc(url)}" alt="logo" />` : "Sin logo";
     $("logoUrl").value = url || "";
+    updateProspStatus();
   }
+
+  // Estado en vivo de Prospección dentro del modal (se recalcula al escribir)
+  function updateProspStatus() {
+    const el = $("prospStatus");
+    if (!el) return;
+    const faltan = prospFaltan({
+      brand: $("f-brand").value, contact: $("f-contact").value, cargo: $("f-cargo").value,
+      email: $("f-email").value, logo: $("f-logo").value
+    });
+    if (!faltan.length) { el.className = "fase-status ok"; el.textContent = "✔ Completa"; }
+    else { el.className = "fase-status miss"; el.textContent = "Faltan: " + faltan.join(", "); }
+  }
+
+  // Propuesta manda sobre la descripción y el valor; aproximación sobre la vía
+  function syncFases() {
+    const propOn = $("f-propuesta").checked;
+    $("propuestaDescWrap").hidden = !propOn;
+    $("f-value").disabled = !propOn;
+    $("f-aprox-via").disabled = !$("f-aproximacion").checked;
+    updateProspStatus();
+  }
+
   function openModal(deal) {
     deal = deal || {};
     $("modalTitle").textContent = deal.id ? (deal.brand || "Editar marca") : "Nueva marca";
     $("dealId").value = deal.id || "";
     setLogoPreview(deal.logo || "");
     $("f-brand").value = deal.brand || "";
-    $("f-value").value = deal.value || "";
-    $("f-stage").value = dealStage(deal);
+    $("f-zona").value = deal.id ? (deal.zona || "") : ((PROFILE && PROFILE.zona) || "");
     $("f-contact").value = deal.contact || "";
+    $("f-cargo").value = deal.cargo || "";
     $("f-email").value = deal.email || "";
     $("f-phone").value = deal.phone || "";
+    $("f-prosp-via").value = deal.prospeccion_via || "";
+    $("f-aproximacion").checked = !!deal.st_aproximacion;
+    $("f-aprox-via").value = deal.aprox_via || "";
+    $("f-propuesta").checked = !!deal.st_propuesta;
+    $("f-propuesta-desc").value = deal.propuesta_desc || "";
+    $("f-value").value = deal.value || "";
     $("f-notes").value = deal.notes || "";
     $("deleteBtn").style.display = deal.id ? "" : "none";
+    syncFases();
 
     // ¿Quién la registró y cuándo? + panel de comentarios (solo si ya existe)
     if (deal.id) {
@@ -224,6 +329,10 @@
     }
     $("modalOverlay").hidden = false;
   }
+
+  ["f-brand", "f-contact", "f-cargo", "f-email"].forEach((id) => $(id).addEventListener("input", updateProspStatus));
+  $("f-aproximacion").addEventListener("change", syncFases);
+  $("f-propuesta").addEventListener("change", syncFases);
 
   /* ---------- Comentarios / actividad ---------- */
   let CURRENT_DEAL = null;
@@ -283,17 +392,38 @@
   $("dealForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const id = $("dealId").value;
+    const aproxOn = $("f-aproximacion").checked;
+    const aproxVia = $("f-aprox-via").value;
+    const propOn = $("f-propuesta").checked;
+    const propDesc = $("f-propuesta-desc").value.trim();
+    // Reglas del cliente: aproximación lleva vía; propuesta lleva descripción
+    if (aproxOn && !aproxVia) { toast("Indica la vía de la aproximación (Conocido / WhatsApp)", true); $("f-aprox-via").focus(); return; }
+    if (propOn && !propDesc) { toast("Para marcar Propuesta describe la propuesta enviada", true); $("f-propuesta-desc").focus(); return; }
     const payload = {
       brand: $("f-brand").value.trim(),
       logo: $("f-logo").value.trim(),
-      value: parseFloat($("f-value").value) || 0,
-      stage: $("f-stage").value,
       contact: $("f-contact").value.trim(),
+      cargo: $("f-cargo").value.trim(),
       email: $("f-email").value.trim(),
       phone: $("f-phone").value.trim(),
+      prospeccion_via: $("f-prosp-via").value,
+      st_aproximacion: aproxOn,
+      aprox_via: aproxVia,
+      st_propuesta: propOn,
+      propuesta_desc: propDesc,
+      value: parseFloat($("f-value").value) || 0,
       notes: $("f-notes").value.trim(),
       updated_at: new Date().toISOString()
     };
+    // Prospección = datos obligatorios completos (se guarda calculada)
+    payload.st_prospeccion = !!(payload.brand && payload.contact && payload.cargo && payload.email && payload.logo);
+    // Zona: el admin la elige; el comercial hereda la suya
+    if (PROFILE && PROFILE.role === "admin") payload.zona = $("f-zona").value;
+    else if (!id) payload.zona = (PROFILE && PROFILE.zona) || "";
+    else {
+      const deal = DEALS.find((d) => d.id === id);
+      if (deal && !deal.zona && PROFILE && PROFILE.zona) payload.zona = PROFILE.zona; // completa marcas viejas sin zona
+    }
     let error;
     if (id) ({ error } = await sb.from("deals").update(payload).eq("id", id));
     else { payload.owner_name = PROFILE ? PROFILE.name : ""; ({ error } = await sb.from("deals").insert([payload])); }

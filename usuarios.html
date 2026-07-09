@@ -60,6 +60,14 @@
               <div class="field"><label>Email</label><input type="email" id="nu-email" required /></div>
               <div class="field"><label>Contraseña</label><input type="text" id="nu-pass" required minlength="6" placeholder="mín. 6 caracteres" /></div>
               <div class="field"><label>Rol</label><select id="nu-role"><option value="comercial">Comercial</option><option value="admin">Admin</option></select></div>
+              <div class="field"><label>Zona</label><select id="nu-zona">
+                <option value="">Sin zona</option>
+                <option>Caracas</option>
+                <option>Centro</option>
+                <option>Lara</option>
+                <option>Andes-Zulia</option>
+                <option>Oriente</option>
+              </select></div>
               <div class="field" style="align-self:end"><button type="submit" class="btn btn-primary btn-block">Crear usuario</button></div>
             </div>
             <p class="form-status" id="newUserStatus" style="text-align:left"></p>
@@ -69,7 +77,7 @@
         <!-- Tabla -->
         <div class="card" style="padding:0;overflow:hidden">
           <table class="users-table">
-            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Registrado</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Zona</th><th>Registrado</th></tr></thead>
             <tbody id="usersTbody"></tbody>
           </table>
         </div>

@@ -12,6 +12,11 @@
 
   let PROFILE = null;
 
+  // Zonas de los prospectores comerciales (una por usuario)
+  const ZONAS = ["Caracas", "Centro", "Lara", "Andes-Zulia", "Oriente"];
+  const zonaOptions = (sel) => `<option value=""${!sel ? " selected" : ""}>Sin zona</option>` +
+    ZONAS.map((z) => `<option value="${z}"${z === sel ? " selected" : ""}>${z}</option>`).join("");
+
   /* ---------- Auth ---------- */
   async function boot() {
     if (!HAS_CLOUD) { $("loginMode").textContent = "Supabase no está configurado (config.js)."; return; }
@@ -60,8 +65,8 @@
   /* ---------- Lista de usuarios ---------- */
   async function loadUsers() {
     const tb = $("usersTbody");
-    const { data, error } = await sb.from("profiles").select("id,email,name,role,created_at").order("created_at", { ascending: true });
-    if (error) { tb.innerHTML = `<tr><td colspan="4">${esc(error.message)}</td></tr>`; return; }
+    const { data, error } = await sb.from("profiles").select("id,email,name,role,zona,created_at").order("created_at", { ascending: true });
+    if (error) { tb.innerHTML = `<tr><td colspan="5">${esc(error.message)}</td></tr>`; return; }
     tb.innerHTML = (data || []).map((p) => {
       const you = (PROFILE && p.id === PROFILE.id) ? `<span class="user-you">(tú)</span>` : "";
       return `<tr>
@@ -71,6 +76,7 @@
           <option value="comercial"${p.role !== "admin" ? " selected" : ""}>Comercial</option>
           <option value="admin"${p.role === "admin" ? " selected" : ""}>Admin</option>
         </select></td>
+        <td><select class="u-zona" data-uid="${p.id}">${zonaOptions(p.zona || "")}</select></td>
         <td>${fdate(p.created_at)}</td>
       </tr>`;
     }).join("");
@@ -80,13 +86,19 @@
         if (error) toast("Error: " + error.message, true); else toast("Rol actualizado ✔");
       });
     });
+    tb.querySelectorAll(".u-zona").forEach((sel) => {
+      sel.addEventListener("change", async () => {
+        const { error } = await sb.from("profiles").update({ zona: sel.value }).eq("id", sel.dataset.uid);
+        if (error) toast("Error: " + error.message, true); else toast("Zona actualizada ✔");
+      });
+    });
   }
 
   /* ---------- Crear usuario ---------- */
   $("newUserForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = $("nu-name").value.trim(), email = $("nu-email").value.trim();
-    const pass = $("nu-pass").value, role = $("nu-role").value;
+    const pass = $("nu-pass").value, role = $("nu-role").value, zona = $("nu-zona").value;
     const st = $("newUserStatus");
     st.className = "form-status"; st.textContent = "Creando usuario...";
     try {
@@ -95,8 +107,8 @@
       });
       const { data, error } = await tmp.auth.signUp({ email, password: pass, options: { data: { name } } });
       if (error) throw error;
-      if (role === "admin" && data.user) {
-        await sb.from("profiles").update({ role: "admin", name }).eq("id", data.user.id);
+      if (data.user) { // el trigger ya creó el perfil; le ponemos rol y zona
+        await sb.from("profiles").update({ role, name, zona }).eq("id", data.user.id);
       }
       st.className = "form-status ok";
       st.textContent = "✔ Usuario creado: " + email + " (entrégale esta contraseña al comercial)";

@@ -50,19 +50,40 @@
     <!-- Métricas -->
     <div class="crm-stats" id="crmStats"></div>
 
+    <!-- Resumen por zona (gráfico sumario de cada proceso) -->
+    <section class="zone-panel" id="zonePanel" hidden>
+      <div class="zone-panel-head">
+        <h3>Resumen por zona</h3>
+        <div class="zone-legend">
+          <span class="zl-item"><span class="zl-dot" style="--zc:#3b82f6"></span>Aproximación</span>
+          <span class="zl-item"><span class="zl-dot" style="--zc:#f59e0b"></span>Prospección</span>
+          <span class="zl-item"><span class="zl-dot" style="--zc:#16c79a"></span>Propuesta</span>
+        </div>
+      </div>
+      <div class="zone-chart" id="zoneChart"></div>
+    </section>
+
     <!-- Filtros -->
     <div class="crm-filters">
       <div class="filter-search">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" id="fSearch" placeholder="Buscar marca..." />
       </div>
-      <select id="fStage"><option value="">Todos los estatus</option></select>
+      <select id="fAvance">
+        <option value="">Todo el avance</option>
+        <option value="sin">Sin iniciar</option>
+        <option value="aproximacion">Aproximación</option>
+        <option value="prospeccion">Prospección</option>
+        <option value="propuesta">Propuesta</option>
+        <option value="completa">Completadas</option>
+      </select>
       <select id="fSort">
         <option value="recent">Más recientes</option>
         <option value="value-desc">Mayor valor</option>
         <option value="value-asc">Menor valor</option>
         <option value="name">Nombre (A-Z)</option>
       </select>
+      <select id="fZona" style="display:none"><option value="">Todas las zonas</option></select>
       <select id="fAgent" style="display:none"><option value="">Todos los agentes</option></select>
     </div>
 
@@ -92,16 +113,54 @@
           </div>
           <div class="grid-2">
             <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
-            <div class="field"><label>Valor anual (USD)</label><input type="number" id="f-value" min="0" step="100" /></div>
+            <div class="field"><label>Zona</label><select id="f-zona" disabled></select></div>
           </div>
           <div class="grid-2">
-            <div class="field"><label>Estatus / etapa</label><select id="f-stage"></select></div>
-            <div class="field"><label>Persona de contacto</label><input type="text" id="f-contact" placeholder="Con quién se cierra el negocio" /></div>
+            <div class="field"><label>Persona de contacto *</label><input type="text" id="f-contact" placeholder="Con quién se cierra el negocio" /></div>
+            <div class="field"><label>Cargo *</label><input type="text" id="f-cargo" placeholder="Ej. Gerente de mercadeo" /></div>
           </div>
           <div class="grid-2">
+            <div class="field"><label>Email *</label><input type="email" id="f-email" /></div>
             <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
-            <div class="field"><label>Email</label><input type="email" id="f-email" /></div>
           </div>
+          <div class="field"><label>¿Dónde identificaste la marca? (acción BTL)</label>
+            <select id="f-prosp-via">
+              <option value="">— Elegir vía —</option>
+              <option>Instagram</option>
+              <option>Supermercado</option>
+              <option>Valla local</option>
+              <option>Radio</option>
+              <option>Evento local</option>
+              <option>Otro</option>
+            </select>
+          </div>
+
+          <!-- Fases del proceso (formato del cliente: estatus sí/no) -->
+          <div class="field fases-block">
+            <label>Avance del proceso</label>
+            <div class="fase-row" id="prospRow">
+              <span class="fase-name">Prospección</span>
+              <span class="fase-status" id="prospStatus">—</span>
+            </div>
+            <p class="fase-hint">Se marca sola cuando la marca tiene contacto, cargo, email y logo cargados.</p>
+            <div class="fase-row">
+              <label class="stage-check"><input type="checkbox" id="f-aproximacion" /> Aproximación</label>
+              <select id="f-aprox-via" class="fase-sub-select">
+                <option value="">— Vía —</option>
+                <option>Conocido</option>
+                <option>WhatsApp</option>
+                <option>Otro</option>
+              </select>
+            </div>
+            <div class="fase-row">
+              <label class="stage-check"><input type="checkbox" id="f-propuesta" /> Propuesta</label>
+            </div>
+            <div class="fase-sub" id="propuestaDescWrap" hidden>
+              <textarea id="f-propuesta-desc" rows="2" placeholder="Describe la propuesta enviada (obligatorio) *"></textarea>
+            </div>
+          </div>
+
+          <div class="field"><label>Valor de la propuesta (USD / año, 100%)</label><input type="number" id="f-value" min="0" step="100" disabled placeholder="Solo si hay propuesta" /></div>
           <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
 
           <!-- Cotizaciones / propuestas enviadas (solo en marcas ya guardadas) -->
