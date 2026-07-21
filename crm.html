@@ -96,91 +96,123 @@
     <div class="modal-card modal-detail">
       <button type="button" class="modal-x" id="modalClose" aria-label="Cerrar">&times;</button>
       <div class="detail-grid" id="detailGrid">
-        <!-- Columna izquierda: info de la marca -->
+        <!-- Columna izquierda: asistente en 3 pasos -->
         <form class="detail-left" id="dealForm">
-          <h2 id="modalTitle">Nueva marca</h2>
-          <p class="deal-meta-info" id="dealMetaInfo"></p>
+          <header class="wiz-head">
+            <h2 id="modalTitle">Nueva marca</h2>
+            <p class="deal-meta-info" id="dealMetaInfo"></p>
+            <nav class="wiz-steps" id="wizSteps">
+              <button type="button" class="wiz-step" data-step="1"><span class="ws-num">1</span><span class="ws-label">La marca</span></button>
+              <button type="button" class="wiz-step" data-step="2"><span class="ws-num">2</span><span class="ws-label">Contacto</span></button>
+              <button type="button" class="wiz-step" data-step="3"><span class="ws-num">3</span><span class="ws-label">Avance</span></button>
+            </nav>
+            <div class="wiz-bar"><div class="wiz-bar-fill" id="wizBarFill"></div></div>
+          </header>
+
           <input type="hidden" id="dealId" />
           <input type="hidden" id="f-logo" />
-          <div class="field"><label>Logo de la marca</label>
-            <div class="logo-edit">
-              <div class="logo-prev" id="logoPrev">Sin logo</div>
-              <div class="logo-edit-actions">
-                <span class="btn btn-ghost btn-sm file-btn">Subir logo<input type="file" accept="image/*" id="logoFile" /></span>
-                <input type="url" id="logoUrl" placeholder="o pega una URL de imagen..." />
+
+          <div class="wiz-body">
+            <!-- ===== Paso 1: la marca ===== -->
+            <section class="wiz-pane" data-pane="1">
+              <p class="wiz-lead">Lo básico para identificarla. Puedes completar el resto después.</p>
+              <div class="field"><label for="f-brand">Marca / Cliente <b class="req">*</b></label>
+                <input type="text" id="f-brand" placeholder="Ej. Pepsi Venezuela" autocomplete="off" />
               </div>
-            </div>
-          </div>
-          <div class="grid-2">
-            <div class="field"><label>Marca / Cliente *</label><input type="text" id="f-brand" required /></div>
-            <div class="field"><label>Zona</label><select id="f-zona" disabled></select></div>
-          </div>
-          <div class="grid-2">
-            <div class="field"><label>Persona de contacto *</label><input type="text" id="f-contact" placeholder="Con quién se cierra el negocio" /></div>
-            <div class="field"><label>Cargo *</label><input type="text" id="f-cargo" placeholder="Ej. Gerente de mercadeo" /></div>
-          </div>
-          <div class="grid-2">
-            <div class="field"><label>Email *</label><input type="email" id="f-email" /></div>
-            <div class="field"><label>Teléfono</label><input type="text" id="f-phone" /></div>
-          </div>
-          <div class="field"><label>¿Dónde identificaste la marca? (acción BTL)</label>
-            <select id="f-prosp-via">
-              <option value="">— Elegir vía —</option>
-              <option>Instagram</option>
-              <option>Supermercado</option>
-              <option>Valla local</option>
-              <option>Radio</option>
-              <option>Evento local</option>
-              <option>Otro</option>
-            </select>
+              <div class="field"><label>Logo de la marca</label>
+                <div class="logo-edit">
+                  <div class="logo-prev" id="logoPrev">Sin logo</div>
+                  <div class="logo-edit-actions">
+                    <span class="btn btn-ghost btn-sm file-btn">Subir logo<input type="file" accept="image/*" id="logoFile" /></span>
+                    <input type="url" id="logoUrl" placeholder="o pega una URL de imagen..." />
+                  </div>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="field"><label for="f-zona">Zona</label><select id="f-zona" disabled></select>
+                  <span class="field-hint" id="zonaHint">Se hereda de tu zona asignada.</span>
+                </div>
+                <div class="field"><label for="f-prosp-via">¿Dónde la identificaste?</label>
+                  <select id="f-prosp-via">
+                    <option value="">— Elegir vía —</option>
+                    <option>Instagram</option>
+                    <option>Supermercado</option>
+                    <option>Valla local</option>
+                    <option>Radio</option>
+                    <option>Evento local</option>
+                    <option>Otro</option>
+                  </select>
+                  <span class="field-hint">Acción BTL donde la viste.</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ===== Paso 2: contacto ===== -->
+            <section class="wiz-pane" data-pane="2" hidden>
+              <p class="wiz-lead">¿Con quién se cierra el negocio?</p>
+              <div class="grid-2">
+                <div class="field"><label for="f-contact">Persona de contacto</label><input type="text" id="f-contact" placeholder="Nombre y apellido" autocomplete="off" /></div>
+                <div class="field"><label for="f-cargo">Cargo</label><input type="text" id="f-cargo" placeholder="Ej. Gerente de mercadeo" autocomplete="off" /></div>
+              </div>
+              <div class="grid-2">
+                <div class="field"><label for="f-email">Email</label><input type="email" id="f-email" placeholder="nombre@empresa.com" autocomplete="off" /></div>
+                <div class="field"><label for="f-phone">Teléfono</label><input type="text" id="f-phone" placeholder="+58 412 000 0000" autocomplete="off" /></div>
+              </div>
+              <div class="field"><label for="f-notes">Notas</label><textarea id="f-notes" rows="3" placeholder="Cualquier detalle útil sobre la marca o el contacto..."></textarea></div>
+            </section>
+
+            <!-- ===== Paso 3: avance del proceso ===== -->
+            <section class="wiz-pane" data-pane="3" hidden>
+              <p class="wiz-lead">Marca hasta dónde llegaste. Puedes dejarlo en blanco y avanzar luego.</p>
+
+              <div class="fase-card is-auto">
+                <div class="fc-top">
+                  <span class="fc-name">Prospección</span>
+                  <span class="fase-status" id="prospStatus">—</span>
+                </div>
+                <p class="fc-hint">Se completa sola cuando la marca tiene logo, contacto, cargo y email.</p>
+                <div class="fc-checklist" id="prospChecklist"></div>
+              </div>
+
+              <div class="fase-card" id="aproxCard">
+                <div class="fc-top">
+                  <span class="fc-name">Aproximación</span>
+                  <label class="switch"><input type="checkbox" id="f-aproximacion" /><span class="switch-track"></span></label>
+                </div>
+                <div class="fc-sub" id="aproxViaWrap" hidden>
+                  <label for="f-aprox-via">Vía de contacto <b class="req">*</b></label>
+                  <select id="f-aprox-via">
+                    <option value="">— Elegir vía —</option>
+                    <option>Conocido</option>
+                    <option>WhatsApp</option>
+                    <option>Otro</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="fase-card" id="propCard">
+                <div class="fc-top">
+                  <span class="fc-name">Propuesta</span>
+                  <label class="switch"><input type="checkbox" id="f-propuesta" /><span class="switch-track"></span></label>
+                </div>
+                <div class="fc-sub" id="propuestaDescWrap" hidden>
+                  <label for="f-propuesta-desc">Descripción de la propuesta <b class="req">*</b></label>
+                  <textarea id="f-propuesta-desc" rows="2" placeholder="Qué se le envió a la marca..."></textarea>
+                  <label for="f-value">Valor USD / año (100%)</label>
+                  <input type="number" id="f-value" min="0" step="100" placeholder="0" />
+                </div>
+              </div>
+            </section>
           </div>
 
-          <!-- Fases del proceso (formato del cliente: estatus sí/no) -->
-          <div class="field fases-block">
-            <label>Avance del proceso</label>
-            <div class="fase-row" id="prospRow">
-              <span class="fase-name">Prospección</span>
-              <span class="fase-status" id="prospStatus">—</span>
-            </div>
-            <p class="fase-hint">Se marca sola cuando la marca tiene contacto, cargo, email y logo cargados.</p>
-            <div class="fase-row">
-              <label class="stage-check"><input type="checkbox" id="f-aproximacion" /> Aproximación</label>
-              <select id="f-aprox-via" class="fase-sub-select">
-                <option value="">— Vía —</option>
-                <option>Conocido</option>
-                <option>WhatsApp</option>
-                <option>Otro</option>
-              </select>
-            </div>
-            <div class="fase-row">
-              <label class="stage-check"><input type="checkbox" id="f-propuesta" /> Propuesta</label>
-            </div>
-            <div class="fase-sub" id="propuestaDescWrap" hidden>
-              <textarea id="f-propuesta-desc" rows="2" placeholder="Describe la propuesta enviada (obligatorio) *"></textarea>
-            </div>
-          </div>
+          <p class="form-error" id="formError" hidden></p>
 
-          <div class="field"><label>Valor de la propuesta (USD / año, 100%)</label><input type="number" id="f-value" min="0" step="100" disabled placeholder="Solo si hay propuesta" /></div>
-          <div class="field"><label>Notas</label><textarea id="f-notes" rows="3"></textarea></div>
-
-          <!-- Cotizaciones / propuestas enviadas (solo en marcas ya guardadas) -->
-          <div class="field deal-quotes" id="quotesBlock" hidden>
-            <label>Cotizaciones / propuestas enviadas</label>
-            <div class="quotes-list" id="quotesList"></div>
-            <div class="quotes-total" id="quotesTotal"></div>
-            <div class="quote-add">
-              <input type="text" id="qConcept" placeholder="Concepto (ej. Propuesta económica)" />
-              <input type="number" id="qAmount" min="0" step="100" placeholder="Monto USD" />
-              <span class="btn btn-ghost btn-sm file-btn" id="qFileBtn">Adjuntar<input type="file" id="qFile" /></span>
-              <button type="button" class="btn btn-primary btn-sm" id="addQuoteBtn">Agregar</button>
-            </div>
-            <span class="quote-file-name" id="qFileName"></span>
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-text" id="deleteBtn">Eliminar</button>
+          <div class="modal-actions wiz-actions">
+            <button type="button" class="btn btn-text danger" id="deleteBtn">Eliminar</button>
             <div style="flex:1"></div>
-            <button type="button" class="btn btn-text" id="cancelBtn">Cancelar</button>
-            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+            <button type="button" class="btn btn-text" id="backBtn">Atrás</button>
+            <button type="button" class="btn btn-primary btn-sm" id="nextBtn">Siguiente</button>
+            <button type="submit" class="btn btn-primary btn-sm" id="saveBtn">Guardar marca</button>
           </div>
         </form>
 

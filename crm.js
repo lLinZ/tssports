@@ -25,6 +25,25 @@
 
   const CHECK = `<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
+  /* Traduce los errores de Supabase a algo accionable.
+     El más común: la base de datos se quedó sin las columnas nuevas
+     (PGRST204 / 42703) porque falta correr el SQL de migración. */
+  function explainError(error, prefijo) {
+    const msg = (error && error.message) || String(error || "");
+    const code = error && error.code;
+    if (code === "PGRST204" || code === "42703" || /column .* does not exist|schema cache/i.test(msg)) {
+      const col = (msg.match(/'([^']+)' column/) || msg.match(/column \S*?\.?(\w+) does not exist/) || [])[1];
+      return "A la base de datos le faltan columnas" + (col ? ` (falta «${col}»)` : "") + ".\n" +
+             "Abre Supabase → SQL Editor → New query, pega el archivo " +
+             "supabase-ARREGLO-URGENTE.sql del proyecto y dale Run. Después recarga esta página.";
+    }
+    if (code === "42501" || /row-level security|permission denied/i.test(msg)) {
+      return "Tu usuario no tiene permiso para esta acción (RLS de Supabase).\n" +
+             "Corre supabase-ARREGLO-URGENTE.sql y verifica el rol de tu usuario.";
+    }
+    return (prefijo ? prefijo + ": " : "") + msg;
+  }
+
   // ¿Qué datos obligatorios de Prospección le faltan a la marca?
   function prospFaltan(d) {
     const faltan = [];
@@ -78,7 +97,13 @@
     const user = s && s.session && s.session.user;
     if (!user) return;
     let prof = null;
-    const { data } = await sb.from("profiles").select("id,name,role,zona").eq("id", user.id).maybeSingle();
+    let { data, error } = await sb.from("profiles").select("id,name,role,zona").eq("id", user.id).maybeSingle();
+    if (error && (error.code === "42703" || error.code === "PGRST204")) {
+      // La columna zona todavía no existe (falta correr el SQL): leemos sin ella
+      // en vez de dar el perfil por perdido y acabar creando uno falso.
+      ({ data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle());
+      if (data) data.zona = "";
+    }
     prof = data;
     if (!prof) { // por si el trigger aún no creó el perfil
       const name = (user.email || "").split("@")[0];
@@ -128,7 +153,12 @@
   /* ---------- Datos ---------- */
   async function load() {
     const { data, error } = await sb.from("deals").select("*").order("created_at", { ascending: false });
-    if (error) { toast("Error al cargar: " + error.message, true); return; }
+    if (error) {
+      // Un error de carga se queda a la vista: el toast se va en 2 segundos y no se lee
+      $("crmBoard").innerHTML = `<div class="brand-empty">${esc(explainError(error, "Error al cargar"))}</div>`;
+      toast("Error al cargar", true);
+      return;
+    }
     DEALS = data || [];
     render();
   }
@@ -264,7 +294,36 @@
   if ($("fZona")) $("fZona").addEventListener("change", renderGrid);
   if ($("fAgent")) $("fAgent").addEventListener("change", renderGrid);
 
-  /* ---------- Modal ---------- */
+  /* ---------- Modal: asistente en 3 pasos ---------- */
+  const STEPS = 3;
+  let STEP = 1;
+
+  // En qué paso vive cada campo, para poder saltar al error
+  const STEP_OF = {
+    "f-brand": 1, "f-zona": 1, "f-prosp-via": 1, "logoUrl": 1,
+    "f-contact": 2, "f-cargo": 2, "f-email": 2, "f-phone": 2, "f-notes": 2,
+    "f-aprox-via": 3, "f-propuesta-desc": 3, "f-value": 3
+  };
+
+  function gotoStep(n) {
+    STEP = Math.min(STEPS, Math.max(1, n));
+    document.querySelectorAll(".wiz-pane").forEach((p) => { p.hidden = Number(p.dataset.pane) !== STEP; });
+    document.querySelectorAll(".wiz-step").forEach((b) => {
+      const s = Number(b.dataset.step);
+      b.classList.toggle("active", s === STEP);
+      b.classList.toggle("done", s < STEP);
+    });
+    $("wizBarFill").style.width = Math.round((STEP / STEPS) * 100) + "%";
+    const editing = !!$("dealId").value;
+    $("backBtn").hidden = STEP === 1;
+    $("nextBtn").hidden = STEP === STEPS;
+    // Al editar se puede guardar desde cualquier paso; al crear, solo al final
+    $("saveBtn").hidden = !(editing || STEP === STEPS);
+    $("saveBtn").textContent = editing ? "Guardar cambios" : "Guardar marca";
+    // En el último paso Guardar es la acción principal; antes es secundaria (solo al editar)
+    $("saveBtn").className = "btn btn-sm " + (STEP === STEPS ? "btn-primary" : "btn-ghost");
+  }
+
   function setLogoPreview(url) {
     $("f-logo").value = url || "";
     $("logoPrev").innerHTML = url ? `<img src="${esc(url)}" alt="logo" />` : "Sin logo";
@@ -276,21 +335,43 @@
   function updateProspStatus() {
     const el = $("prospStatus");
     if (!el) return;
-    const faltan = prospFaltan({
-      brand: $("f-brand").value, contact: $("f-contact").value, cargo: $("f-cargo").value,
-      email: $("f-email").value, logo: $("f-logo").value
-    });
+    const campos = [
+      ["marca", $("f-brand").value], ["logo", $("f-logo").value],
+      ["contacto", $("f-contact").value], ["cargo", $("f-cargo").value], ["email", $("f-email").value]
+    ];
+    const faltan = campos.filter(([, v]) => !(v || "").trim()).map(([k]) => k);
     if (!faltan.length) { el.className = "fase-status ok"; el.textContent = "✔ Completa"; }
-    else { el.className = "fase-status miss"; el.textContent = "Faltan: " + faltan.join(", "); }
+    else { el.className = "fase-status miss"; el.textContent = faltan.length + " por completar"; }
+    const list = $("prospChecklist");
+    if (list) {
+      list.innerHTML = campos.map(([k, v]) => {
+        const ok = !!(v || "").trim();
+        return `<span class="fc-chk ${ok ? "ok" : ""}"><span class="fc-mark">${ok ? CHECK : ""}</span>${k}</span>`;
+      }).join("");
+    }
   }
 
   // Propuesta manda sobre la descripción y el valor; aproximación sobre la vía
   function syncFases() {
+    const aproxOn = $("f-aproximacion").checked;
     const propOn = $("f-propuesta").checked;
+    $("aproxViaWrap").hidden = !aproxOn;
     $("propuestaDescWrap").hidden = !propOn;
-    $("f-value").disabled = !propOn;
-    $("f-aprox-via").disabled = !$("f-aproximacion").checked;
+    $("aproxCard").classList.toggle("on", aproxOn);
+    $("propCard").classList.toggle("on", propOn);
     updateProspStatus();
+  }
+
+  function showFormError(msg, focusId) {
+    const el = $("formError");
+    if (msg) {
+      el.textContent = msg; el.hidden = false;
+      if (focusId && STEP_OF[focusId]) gotoStep(STEP_OF[focusId]);
+      if (focusId && $(focusId)) { $(focusId).classList.add("invalid"); $(focusId).focus(); }
+    } else {
+      el.hidden = true; el.textContent = "";
+      document.querySelectorAll(".invalid").forEach((n) => n.classList.remove("invalid"));
+    }
   }
 
   function openModal(deal) {
@@ -311,10 +392,14 @@
     $("f-propuesta-desc").value = deal.propuesta_desc || "";
     $("f-value").value = deal.value || "";
     $("f-notes").value = deal.notes || "";
-    $("deleteBtn").style.display = deal.id ? "" : "none";
+    $("deleteBtn").hidden = !deal.id;
+    if ($("zonaHint")) $("zonaHint").textContent = (PROFILE && PROFILE.role === "admin") ? "Como admin puedes elegirla." : "Se hereda de tu zona asignada.";
+    showFormError("");
     syncFases();
+    gotoStep(1);
 
-    // ¿Quién la registró y cuándo? + panel de comentarios (solo si ya existe)
+    // ¿Quién la registró y cuándo? + panel de comentarios (SOLO en marcas ya guardadas:
+    // al registrar no tiene sentido comentar algo que todavía no existe)
     if (deal.id) {
       const reg = deal.source === "web" ? "Formulario web" : (deal.owner_name || "—");
       $("dealMetaInfo").textContent = "Registrada por " + reg + (deal.created_at ? " · " + fdate(deal.created_at) : "");
@@ -326,11 +411,27 @@
       $("detailRight").hidden = true;
       $("detailGrid").classList.remove("two");
       $("commentsList").innerHTML = "";
+      CURRENT_DEAL = null;
     }
     $("modalOverlay").hidden = false;
+    setTimeout(() => $("f-brand").focus(), 60);
   }
 
-  ["f-brand", "f-contact", "f-cargo", "f-email"].forEach((id) => $(id).addEventListener("input", updateProspStatus));
+  // Navegación del asistente
+  $("nextBtn").addEventListener("click", () => {
+    if (STEP === 1 && !$("f-brand").value.trim()) { showFormError("Ponle nombre a la marca para continuar.", "f-brand"); return; }
+    showFormError(""); gotoStep(STEP + 1);
+  });
+  $("backBtn").addEventListener("click", () => { showFormError(""); gotoStep(STEP - 1); });
+  document.querySelectorAll(".wiz-step").forEach((b) => b.addEventListener("click", () => {
+    const target = Number(b.dataset.step);
+    if (target > 1 && !$("f-brand").value.trim()) { showFormError("Ponle nombre a la marca para continuar.", "f-brand"); return; }
+    showFormError(""); gotoStep(target);
+  }));
+
+  ["f-brand", "f-contact", "f-cargo", "f-email"].forEach((id) => $(id).addEventListener("input", () => {
+    $(id).classList.remove("invalid"); updateProspStatus();
+  }));
   $("f-aproximacion").addEventListener("change", syncFases);
   $("f-propuesta").addEventListener("change", syncFases);
 
@@ -369,8 +470,8 @@
   });
   function closeModal() { $("modalOverlay").hidden = true; }
   $("addBtn").addEventListener("click", () => openModal(null));
-  $("cancelBtn").addEventListener("click", closeModal);
   $("modalClose").addEventListener("click", closeModal);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modalOverlay").hidden) closeModal(); });
   $("modalOverlay").addEventListener("click", (e) => { if (e.target === $("modalOverlay")) closeModal(); });
 
   // Logo: pegar URL o subir archivo
@@ -396,9 +497,11 @@
     const aproxVia = $("f-aprox-via").value;
     const propOn = $("f-propuesta").checked;
     const propDesc = $("f-propuesta-desc").value.trim();
-    // Reglas del cliente: aproximación lleva vía; propuesta lleva descripción
-    if (aproxOn && !aproxVia) { toast("Indica la vía de la aproximación (Conocido / WhatsApp)", true); $("f-aprox-via").focus(); return; }
-    if (propOn && !propDesc) { toast("Para marcar Propuesta describe la propuesta enviada", true); $("f-propuesta-desc").focus(); return; }
+    showFormError("");
+    // Reglas del cliente: la marca lleva nombre; aproximación lleva vía; propuesta lleva descripción
+    if (!$("f-brand").value.trim()) { showFormError("Ponle nombre a la marca.", "f-brand"); return; }
+    if (aproxOn && !aproxVia) { showFormError("Indica la vía de la aproximación (Conocido / WhatsApp).", "f-aprox-via"); return; }
+    if (propOn && !propDesc) { showFormError("Para marcar Propuesta describe qué se le envió a la marca.", "f-propuesta-desc"); return; }
     const payload = {
       brand: $("f-brand").value.trim(),
       logo: $("f-logo").value.trim(),
@@ -411,7 +514,7 @@
       aprox_via: aproxVia,
       st_propuesta: propOn,
       propuesta_desc: propDesc,
-      value: parseFloat($("f-value").value) || 0,
+      value: propOn ? (parseFloat($("f-value").value) || 0) : 0,
       notes: $("f-notes").value.trim(),
       updated_at: new Date().toISOString()
     };
@@ -427,7 +530,7 @@
     let error;
     if (id) ({ error } = await sb.from("deals").update(payload).eq("id", id));
     else { payload.owner_name = PROFILE ? PROFILE.name : ""; ({ error } = await sb.from("deals").insert([payload])); }
-    if (error) { toast("Error al guardar: " + error.message, true); return; }
+    if (error) { showFormError(explainError(error, "No se pudo guardar la marca")); return; }
     closeModal(); toast("Guardado ✔"); load();
   });
 
