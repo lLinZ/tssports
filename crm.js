@@ -407,7 +407,19 @@
     $("f-value").value = deal.value || "";
     $("f-notes").value = deal.notes || "";
     $("deleteBtn").hidden = !deal.id;
-    if ($("zonaHint")) $("zonaHint").textContent = (PROFILE && PROFILE.role === "admin") ? "Como admin puedes elegirla." : "Se hereda de tu zona asignada.";
+    // Zona: el admin siempre elige. El comercial la hereda de su perfil, salvo
+    // que no tenga ninguna asignada: entonces la elige él, o se queda atrapado
+    // en "Sin zona" para siempre (solo un admin puede asignarla en Usuarios).
+    const isAdmin = PROFILE && PROFILE.role === "admin";
+    const sinZona = !(PROFILE && PROFILE.zona);
+    $("f-zona").disabled = !(isAdmin || sinZona);
+    if ($("zonaHint")) {
+      $("zonaHint").textContent = isAdmin
+        ? "Como admin puedes elegirla."
+        : sinZona
+          ? "No tienes zona asignada, elígela para esta marca. Pídele a un admin que te asigne la tuya."
+          : "Se hereda de tu zona asignada (" + PROFILE.zona + ").";
+    }
     showFormError("");
     syncFases();
     gotoStep(1);
@@ -534,8 +546,9 @@
     };
     // Prospección = datos obligatorios completos (se guarda calculada)
     payload.st_prospeccion = !!(payload.brand && payload.contact && payload.cargo && payload.email && payload.logo);
-    // Zona: el admin la elige; el comercial hereda la suya
-    if (PROFILE && PROFILE.role === "admin") payload.zona = $("f-zona").value;
+    // Zona: la elige quien tiene el select habilitado (admin, o comercial sin
+    // zona propia); el resto hereda la suya. Debe ir en el mismo orden que openModal.
+    if (PROFILE && (PROFILE.role === "admin" || !PROFILE.zona)) payload.zona = $("f-zona").value;
     else if (!id) payload.zona = (PROFILE && PROFILE.zona) || "";
     else {
       const deal = DEALS.find((d) => d.id === id);
