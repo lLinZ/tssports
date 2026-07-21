@@ -28,6 +28,14 @@
   /* Traduce los errores de Supabase a algo accionable.
      El más común: la base de datos se quedó sin las columnas nuevas
      (PGRST204 / 42703) porque falta correr el SQL de migración. */
+  /* Cuando RLS filtra una fila, PostgREST NO devuelve error: el update/delete
+     simplemente afecta 0 filas y responde 204. Por eso hay que pedir .select()
+     y contar lo que volvió, o la interfaz canta "Guardado/Eliminada" sin
+     haber tocado nada (pasa con los leads del formulario web, que van sin dueño). */
+  const RLS_MSG = "No se modificó nada: no tienes permiso sobre esta marca.\n" +
+    "Las marcas sin dueño (las que entran por el formulario web) y las de otro comercial " +
+    "solo las puede editar o borrar un admin.";
+
   function explainError(error, prefijo) {
     const msg = (error && error.message) || String(error || "");
     const code = error && error.code;
@@ -282,8 +290,14 @@
       deal[key] = !deal[key];
       renderGrid();
       const upd = {}; upd[key] = deal[key]; upd.updated_at = new Date().toISOString();
-      const { error } = await sb.from("deals").update(upd).eq("id", deal.id);
-      if (error) { toast("Error: " + error.message, true); load(); } else { render(); }
+      // Marcar una fase de un lead web también lo adopta (mismo criterio que al editar)
+      if (!deal.owner && PROFILE) { upd.owner = PROFILE.id; upd.owner_name = PROFILE.name || ""; }
+      const { data, error } = await sb.from("deals").update(upd).eq("id", deal.id).select("id");
+      if (error) { toast(explainError(error, "Error"), true); load(); return; }
+      // 0 filas = RLS la filtró. Deshacemos el cambio optimista en vez de
+      // dejar la tarjeta marcada con algo que no se guardó.
+      if (!data || !data.length) { deal[key] = !deal[key]; renderGrid(); toast("Sin permiso para modificar esta marca", true); return; }
+      render();
       return;
     }
     openModal(deal);
@@ -527,18 +541,29 @@
       const deal = DEALS.find((d) => d.id === id);
       if (deal && !deal.zona && PROFILE && PROFILE.zona) payload.zona = PROFILE.zona; // completa marcas viejas sin zona
     }
-    let error;
-    if (id) ({ error } = await sb.from("deals").update(payload).eq("id", id));
-    else { payload.owner_name = PROFILE ? PROFILE.name : ""; ({ error } = await sb.from("deals").insert([payload])); }
+    // Adopción: si el lead entró por la web (sin dueño), al editarlo queda a
+    // nombre de quien lo trabaja. Si no, la policy lo dejaría huérfano para siempre.
+    if (id && PROFILE) {
+      const deal = DEALS.find((d) => d.id === id);
+      if (deal && !deal.owner) { payload.owner = PROFILE.id; payload.owner_name = PROFILE.name || ""; }
+    }
+    let error, data;
+    if (id) ({ data, error } = await sb.from("deals").update(payload).eq("id", id).select("id"));
+    else {
+      payload.owner_name = PROFILE ? PROFILE.name : "";
+      ({ data, error } = await sb.from("deals").insert([payload]).select("id"));
+    }
     if (error) { showFormError(explainError(error, "No se pudo guardar la marca")); return; }
+    if (!data || !data.length) { showFormError(RLS_MSG); return; }  // RLS la filtró: no se guardó
     closeModal(); toast("Guardado ✔"); load();
   });
 
   $("deleteBtn").addEventListener("click", async () => {
     const id = $("dealId").value;
     if (!id || !confirm("¿Eliminar esta oportunidad?")) return;
-    const { error } = await sb.from("deals").delete().eq("id", id);
-    if (error) { toast("Error: " + error.message, true); return; }
+    const { data, error } = await sb.from("deals").delete().eq("id", id).select("id");
+    if (error) { showFormError(explainError(error, "No se pudo eliminar")); return; }
+    if (!data || !data.length) { showFormError(RLS_MSG); return; }  // RLS la filtró: no se borró
     closeModal(); toast("Eliminada ✔"); load();
   });
 
