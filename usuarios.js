@@ -11,11 +11,27 @@
   const fdate = (s) => { try { return new Date(s).toLocaleDateString("es"); } catch (e) { return ""; } };
 
   let PROFILE = null;
+  let USERS = [];   // usuarios cargados, para poblar el modal de edición
 
   // Zonas de los prospectores comerciales (una por usuario)
   const ZONAS = ["Caracas", "Centro", "Lara", "Andes-Zulia", "Oriente"];
   const zonaOptions = (sel) => `<option value=""${!sel ? " selected" : ""}>Sin zona</option>` +
     ZONAS.map((z) => `<option value="${z}"${z === sel ? " selected" : ""}>${z}</option>`).join("");
+  const roleLabel = (r) => r === "admin" ? "Admin" : r === "vendedor" ? "Vendedor" : "Comercial";
+
+  // Traduce el error de una Edge Function (incluye el caso "aún no desplegada")
+  async function readFnError(error) {
+    try {
+      if (error && error.context && typeof error.context.json === "function") {
+        const j = await error.context.json();
+        if (j && j.error) return j.error;
+      }
+    } catch (_) { /* noop */ }
+    const m = (error && error.message) || String(error);
+    if (/not found|404|failed to send|failed to fetch/i.test(m))
+      return "La función 'update-user' no está desplegada todavía en Supabase. Despliégala (carpeta supabase/functions/update-user) y vuelve a intentar.";
+    return m;
+  }
 
   /* ---------- Auth ---------- */
   async function boot() {
@@ -66,34 +82,66 @@
   async function loadUsers() {
     const tb = $("usersTbody");
     const { data, error } = await sb.from("profiles").select("id,email,name,role,zona,created_at").order("created_at", { ascending: true });
-    if (error) { tb.innerHTML = `<tr><td colspan="5">${esc(error.message)}</td></tr>`; return; }
-    tb.innerHTML = (data || []).map((p) => {
+    if (error) { tb.innerHTML = `<tr><td colspan="6">${esc(error.message)}</td></tr>`; return; }
+    USERS = data || [];
+    tb.innerHTML = USERS.map((p) => {
       const you = (PROFILE && p.id === PROFILE.id) ? `<span class="user-you">(tú)</span>` : "";
       return `<tr>
         <td><strong>${esc(p.name || "—")}</strong>${you}</td>
         <td>${esc(p.email)}</td>
-        <td><select class="u-role" data-uid="${p.id}">
-          <option value="comercial"${p.role === "comercial" ? " selected" : ""}>Comercial</option>
-          <option value="vendedor"${p.role === "vendedor" ? " selected" : ""}>Vendedor</option>
-          <option value="admin"${p.role === "admin" ? " selected" : ""}>Admin</option>
-        </select></td>
-        <td><select class="u-zona" data-uid="${p.id}">${zonaOptions(p.zona || "")}</select></td>
+        <td>${esc(roleLabel(p.role))}</td>
+        <td>${esc(p.zona || "—")}</td>
         <td>${fdate(p.created_at)}</td>
+        <td style="text-align:right"><button class="btn btn-ghost btn-sm u-edit" data-uid="${p.id}">Editar</button></td>
       </tr>`;
     }).join("");
-    tb.querySelectorAll(".u-role").forEach((sel) => {
-      sel.addEventListener("change", async () => {
-        const { error } = await sb.from("profiles").update({ role: sel.value }).eq("id", sel.dataset.uid);
-        if (error) toast("Error: " + error.message, true); else toast("Rol actualizado ✔");
-      });
-    });
-    tb.querySelectorAll(".u-zona").forEach((sel) => {
-      sel.addEventListener("change", async () => {
-        const { error } = await sb.from("profiles").update({ zona: sel.value }).eq("id", sel.dataset.uid);
-        if (error) toast("Error: " + error.message, true); else toast("Zona actualizada ✔");
-      });
-    });
+    tb.querySelectorAll(".u-edit").forEach((b) => b.addEventListener("click", () => openEdit(b.dataset.uid)));
   }
+
+  /* ---------- Modal: editar usuario ---------- */
+  function openEdit(uid) {
+    const p = USERS.find((u) => u.id === uid);
+    if (!p) return;
+    $("eu-id").value = p.id;
+    $("eu-name").value = p.name || "";
+    $("eu-email").value = p.email || "";
+    $("eu-role").value = p.role || "comercial";
+    $("eu-zona").innerHTML = zonaOptions(p.zona || "");
+    $("eu-pass").value = "";
+    $("editStatus").className = "form-status"; $("editStatus").textContent = "";
+    $("editOverlay").hidden = false;
+  }
+  function closeEdit() { $("editOverlay").hidden = true; }
+  $("editClose").addEventListener("click", closeEdit);
+  $("editCancel").addEventListener("click", closeEdit);
+  $("editOverlay").addEventListener("click", (e) => { if (e.target === $("editOverlay")) closeEdit(); });
+
+  $("editUserForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const st = $("editStatus");
+    const pass = $("eu-pass").value;
+    if (pass && pass.length < 6) { st.className = "form-status err"; st.textContent = "La contraseña debe tener al menos 6 caracteres."; return; }
+    const body = {
+      id: $("eu-id").value,
+      name: $("eu-name").value.trim(),
+      email: $("eu-email").value.trim().toLowerCase(),
+      role: $("eu-role").value,
+      zona: $("eu-zona").value,
+    };
+    if (pass) body.password = pass;
+    st.className = "form-status"; st.textContent = "Guardando...";
+    $("editSave").disabled = true;
+    try {
+      const { data, error } = await sb.functions.invoke("update-user", { body });
+      if (error) throw new Error(await readFnError(error));
+      if (data && data.error) throw new Error(data.error);
+      closeEdit();
+      toast("Usuario actualizado ✔");
+      await loadUsers();
+    } catch (err) {
+      st.className = "form-status err"; st.textContent = "Error: " + (err.message || err);
+    } finally { $("editSave").disabled = false; }
+  });
 
   /* ---------- Crear usuario ---------- */
   $("newUserForm").addEventListener("submit", async (e) => {

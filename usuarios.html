@@ -34,6 +34,7 @@
         <div class="brand"><span class="brand-mark">TS</span><span class="brand-name">Sports</span><span class="admin-badge">CRM</span></div>
         <nav class="admin-bar-nav">
           <span class="admin-mode-tag" id="userTag"></span>
+          <a href="perfil.html" class="btn btn-ghost btn-sm"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Mi perfil</a>
           <a href="crm.html" class="btn btn-ghost btn-sm"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Volver al CRM</a>
           <button class="btn btn-text" id="logoutBtn">Salir</button>
         </nav>
@@ -77,12 +78,40 @@
         <!-- Tabla -->
         <div class="card" style="padding:0;overflow:hidden">
           <table class="users-table">
-            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Zona</th><th>Registrado</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Zona</th><th>Registrado</th><th></th></tr></thead>
             <tbody id="usersTbody"></tbody>
           </table>
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- ===== Modal: editar usuario (solo admin) ===== -->
+  <div class="modal-overlay" id="editOverlay" hidden>
+    <div class="modal-card" style="max-width:460px">
+      <button type="button" class="modal-x" id="editClose" aria-label="Cerrar">&times;</button>
+      <h2>Editar usuario</h2>
+      <form id="editUserForm">
+        <input type="hidden" id="eu-id" />
+        <div class="field"><label for="eu-name">Nombre</label><input type="text" id="eu-name" required /></div>
+        <div class="field"><label for="eu-email">Email (correo de inicio de sesión)</label><input type="email" id="eu-email" required /></div>
+        <div class="grid-2">
+          <div class="field"><label for="eu-role">Rol</label><select id="eu-role">
+            <option value="comercial">Comercial</option>
+            <option value="vendedor">Vendedor</option>
+            <option value="admin">Admin</option>
+          </select></div>
+          <div class="field"><label for="eu-zona">Zona</label><select id="eu-zona"></select></div>
+        </div>
+        <div class="field"><label for="eu-pass">Nueva contraseña (opcional)</label><input type="text" id="eu-pass" minlength="6" placeholder="Déjalo vacío para no cambiarla" autocomplete="new-password" /></div>
+        <p class="form-status" id="editStatus"></p>
+        <div class="modal-actions">
+          <div style="flex:1"></div>
+          <button type="button" class="btn btn-text" id="editCancel">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="editSave">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <div class="save-toast" id="toast"></div>

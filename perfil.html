@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TS Sports · Mi perfil</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="admin.css" />
+  <link rel="stylesheet" href="crm.css" />
+</head>
+<body class="admin-body">
+
+  <!-- ===== Login ===== (oculto hasta saber si hay sesión, evita el parpadeo) -->
+  <section class="login-screen" id="loginScreen" style="display:none">
+    <form class="login-card" id="loginForm">
+      <div class="brand brand-login"><span class="brand-mark">TS</span><span class="brand-name">Sports</span></div>
+      <h1>Mi perfil</h1>
+      <p class="login-sub">Inicia sesión para ver y editar tus datos.</p>
+      <div class="field"><label for="loginEmail">Email</label><input type="email" id="loginEmail" required autocomplete="username" /></div>
+      <div class="field"><label for="loginPass">Contraseña</label><input type="password" id="loginPass" required autocomplete="current-password" /></div>
+      <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+      <p class="login-status" id="loginStatus" role="status"></p>
+      <p class="login-mode" id="loginMode"></p>
+    </form>
+  </section>
+
+  <!-- ===== App ===== -->
+  <div class="admin-app" id="profileApp" hidden>
+    <header class="admin-top">
+      <div class="admin-bar admin-bar-main">
+        <div class="brand"><span class="brand-mark">TS</span><span class="brand-name">Sports</span><span class="admin-badge">CRM</span></div>
+        <nav class="admin-bar-nav">
+          <span class="admin-mode-tag" id="userTag"></span>
+          <a href="crm.html" class="btn btn-ghost btn-sm"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>Volver al CRM</a>
+          <button class="btn btn-text" id="logoutBtn">Salir</button>
+        </nav>
+      </div>
+      <div class="admin-bar admin-bar-actions">
+        <span class="admin-bar-title">Mi perfil</span>
+      </div>
+    </header>
+
+    <main class="users-main" style="max-width:560px">
+      <div class="card">
+        <h3 style="margin-bottom:6px">Mis datos</h3>
+        <p class="panel-desc" style="margin:0 0 18px">Edita tu nombre, tu correo de inicio de sesión y tu contraseña. El rol y la zona los gestiona un administrador.</p>
+        <form id="profileForm">
+          <div class="field"><label for="pf-name">Nombre</label><input type="text" id="pf-name" required /></div>
+          <div class="field"><label for="pf-email">Email (correo de inicio de sesión)</label><input type="email" id="pf-email" required />
+            <span class="field-hint" id="pf-emailHint">Si lo cambias, la próxima vez entrarás con el correo nuevo.</span>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label>Rol</label><input type="text" id="pf-role" disabled /></div>
+            <div class="field"><label>Zona</label><input type="text" id="pf-zona" disabled /></div>
+          </div>
+          <div class="field"><label for="pf-pass">Nueva contraseña (opcional)</label><input type="text" id="pf-pass" minlength="6" placeholder="Déjala vacía para no cambiarla" autocomplete="new-password" /></div>
+          <p class="form-status" id="profileStatus"></p>
+          <div class="modal-actions">
+            <div style="flex:1"></div>
+            <button type="submit" class="btn btn-primary btn-sm" id="pf-save">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div class="save-toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="perfil.js"></script>
+</body>
+</html>
