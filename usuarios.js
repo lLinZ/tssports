@@ -54,7 +54,7 @@
     e.preventDefault();
     $("loginStatus").textContent = "";
     try {
-      const { error } = await sb.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPass").value });
+      const { error } = await sb.auth.signInWithPassword({ email: $("loginEmail").value.trim().toLowerCase(), password: $("loginPass").value });
       if (error) throw error;
       await showApp();
     } catch (err) { $("loginStatus").textContent = "No se pudo iniciar sesión: " + (err.message || err); }
@@ -97,7 +97,8 @@
   /* ---------- Crear usuario ---------- */
   $("newUserForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const name = $("nu-name").value.trim(), email = $("nu-email").value.trim();
+    // El email se guarda en minúsculas para que el login nunca falle por mayúsculas
+    const name = $("nu-name").value.trim(), email = $("nu-email").value.trim().toLowerCase();
     const pass = $("nu-pass").value, role = $("nu-role").value, zona = $("nu-zona").value;
     const st = $("newUserStatus");
     st.className = "form-status"; st.textContent = "Creando usuario...";

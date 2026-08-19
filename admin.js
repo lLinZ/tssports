@@ -54,7 +54,7 @@
     e.preventDefault();
     $("loginStatus").textContent = "";
     try {
-      await S.signIn($("loginEmail").value.trim(), $("loginPass").value);
+      await S.signIn($("loginEmail").value.trim().toLowerCase(), $("loginPass").value);
       await showApp();
     } catch (err) {
       $("loginStatus").textContent = "No se pudo iniciar sesión: " + (err.message || err);

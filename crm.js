@@ -150,10 +150,17 @@
     e.preventDefault();
     $("loginStatus").textContent = "";
     try {
-      const { error } = await sb.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPass").value });
+      // El email no distingue mayúsculas (se normaliza); la contraseña sí, se manda tal cual
+      const email = $("loginEmail").value.trim().toLowerCase();
+      const { error } = await sb.auth.signInWithPassword({ email, password: $("loginPass").value });
       if (error) throw error;
       await showApp();
-    } catch (err) { $("loginStatus").textContent = "No se pudo iniciar sesión: " + (err.message || err); }
+    } catch (err) {
+      const m = (err && err.message) || String(err);
+      $("loginStatus").textContent = /invalid login credentials/i.test(m)
+        ? "Email o contraseña incorrectos. Revisa que la contraseña esté bien escrita (distingue mayúsculas)."
+        : "No se pudo iniciar sesión: " + m;
+    }
   });
   $("logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); showLogin(); });
   $("refreshBtn").addEventListener("click", load);
