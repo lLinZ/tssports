@@ -20,6 +20,7 @@
      Propuesta:    estatus sí/no + descripción obligatoria.
      Valor:        100% del valor de la propuesta pasada. ▼▼▼ */
   const ZONAS = ["Caracas", "Centro", "Lara", "Andes-Zulia", "Oriente"];
+  const SECTORES = ["Alimentos", "Bebidas", "Telecomunicaciones", "Banca y finanzas", "Retail", "Automotriz", "Tecnología", "Salud", "Educación", "Deportes", "Entretenimiento", "Otro"];
   const FASE_COLORS = { aprox: "#3b82f6", prosp: "#f59e0b", prop: "#16c79a" };
   /* ▲▲▲ ▲▲▲ */
 
@@ -74,12 +75,17 @@
   }
 
   let DEALS = [];
-  let PROFILE = null; // { id, name, role, zona }
+  let PROFILE = null;     // { id, name, role, zona }
+  let VENDEDORES = [];    // lista de usuarios con rol 'vendedor' (para asignar)
+
+  const roleLabel = (r) => r === "admin" ? "Admin" : r === "vendedor" ? "Vendedor" : "Comercial";
+  const canAssign = () => PROFILE && (PROFILE.role === "admin" || PROFILE.role === "comercial");
 
   /* ---------- Auth ---------- */
   async function boot() {
-    // Zonas en el select del modal (el filtro fZona se llena al saber el rol)
+    // Zonas y sectores en los selects del modal (el filtro fZona se llena al saber el rol)
     $("f-zona").innerHTML = `<option value="">Sin zona</option>` + ZONAS.map((z) => `<option value="${z}">${z}</option>`).join("");
+    $("f-sector").innerHTML = `<option value="">— Elegir sector —</option>` + SECTORES.map((s) => `<option value="${s}">${s}</option>`).join("");
 
     if (!HAS_CLOUD) {
       $("loginMode").textContent = "Supabase no está configurado (config.js). El CRM necesita la nube para funcionar.";
@@ -121,12 +127,17 @@
     PROFILE = prof;
     const tag = $("userTag");
     if (tag) {
-      const rol = prof.role === "admin" ? "Admin" : "Comercial";
-      tag.textContent = "● " + (prof.name || user.email) + " · " + rol + (prof.zona ? " · " + prof.zona : "");
+      tag.textContent = "● " + (prof.name || user.email) + " · " + roleLabel(prof.role) + (prof.zona ? " · " + prof.zona : "");
       tag.className = "admin-mode-tag" + (prof.role === "admin" ? " cloud" : "");
     }
     // El enlace a la vista de usuarios solo lo ve el admin
     if ($("usersBtn")) $("usersBtn").style.display = (prof.role === "admin") ? "" : "none";
+
+    // Lista de vendedores para el selector de "asignado" (la usan admin y comercial)
+    if (canAssign()) {
+      const { data: vs } = await sb.from("profiles").select("id,name,email,zona").eq("role", "vendedor").order("name");
+      VENDEDORES = vs || [];
+    }
 
     // El admin puede filtrar por agente y por zona, y editar la zona de una marca
     if (prof.role === "admin") {
@@ -259,16 +270,22 @@
       fase("prospeccion", "Prospección", prosp, prosp ? "" : `<em class="bs-via">faltan datos</em>`) +
       fase("propuesta", "Propuesta", !!d.st_propuesta);
     const src = d.source === "web" ? `<span class="deal-source">Web</span>` : "";
-    const owner = (PROFILE && PROFILE.role === "admin" && d.owner_name)
-      ? `<span class="brand-owner"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(d.owner_name)}${d.zona ? " · " + esc(d.zona) : ""}</span>` : "";
+    const personSvg = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+    const badge = (t, cls) => `<span class="brand-owner${cls ? " " + cls : ""}">${personSvg}${esc(t)}</span>`;
+    // Se muestra el vendedor asignado; si no hay, el admin ve quién la registró
+    const who = d.assigned_name
+      ? badge(d.assigned_name, "assigned")
+      : (PROFILE && PROFILE.role === "admin" && d.owner_name ? badge(d.owner_name + (d.zona ? " · " + d.zona : "")) : "");
+    const sector = d.sector ? `<span class="brand-sector">${esc(d.sector)}</span>` : "";
     return `<article class="brand-card" data-id="${d.id}">
       ${src}
       <div class="brand-logo">${logo}</div>
       <div class="brand-name">${esc(d.brand) || "(sin nombre)"}</div>
+      ${sector}
       <div class="brand-stages">${chips}</div>
       <div class="brand-foot">
         <span class="brand-value">${(d.st_propuesta && d.value) ? money(d.value) + " /año" : "—"}</span>
-        ${owner}
+        ${who}
       </div>
     </article>`;
   }
@@ -413,7 +430,21 @@
     $("f-propuesta-desc").value = deal.propuesta_desc || "";
     $("f-value").value = deal.value || "";
     $("f-notes").value = deal.notes || "";
-    $("deleteBtn").hidden = !deal.id;
+    $("f-sector").value = deal.sector || "";
+    $("f-invierte").value = deal.invierte || "";
+    // Vendedor asignado: solo lo eligen admin y comercial. El vendedor no ve el campo.
+    const asgWrap = $("assignWrap");
+    if (asgWrap) {
+      asgWrap.hidden = !canAssign();
+      if (canAssign()) {
+        $("f-assigned").innerHTML = `<option value="">— Sin asignar —</option>` +
+          VENDEDORES.map((v) => `<option value="${v.id}">${esc(v.name || v.email)}${v.zona ? " — " + esc(v.zona) : ""}</option>`).join("");
+        $("f-assigned").value = deal.assigned_to || "";
+      }
+    }
+    // Borrar es de admin y comercial; el vendedor no borra
+    const puedeBorrar = PROFILE && (PROFILE.role === "admin" || PROFILE.role === "comercial");
+    $("deleteBtn").hidden = !deal.id || !puedeBorrar;
     // Zona: el admin siempre elige. El comercial la hereda de su perfil, salvo
     // que no tenga ninguna asignada: entonces la elige él, o se queda atrapado
     // en "Sin zona" para siempre (solo un admin puede asignarla en Usuarios).
@@ -549,6 +580,8 @@
       propuesta_desc: propDesc,
       value: propOn ? (parseFloat($("f-value").value) || 0) : 0,
       notes: $("f-notes").value.trim(),
+      sector: $("f-sector").value,
+      invierte: $("f-invierte").value,
       updated_at: new Date().toISOString()
     };
     // Prospección = datos obligatorios completos (se guarda calculada)
@@ -566,6 +599,19 @@
     if (id && PROFILE) {
       const deal = DEALS.find((d) => d.id === id);
       if (deal && !deal.owner) { payload.owner = PROFILE.id; payload.owner_name = PROFILE.name || ""; }
+    }
+    // Vendedor asignado: lo fija admin/comercial desde el selector.
+    if (canAssign()) {
+      const aid = $("f-assigned").value || null;
+      payload.assigned_to = aid;
+      const v = VENDEDORES.find((x) => x.id === aid);
+      payload.assigned_name = v ? (v.name || v.email) : "";
+    }
+    // Si un vendedor crea una marca, se la asignamos a él mismo; si no, por RLS
+    // no podría volver a editarla (solo edita lo que tiene asignado).
+    if (!id && PROFILE && PROFILE.role === "vendedor") {
+      payload.assigned_to = PROFILE.id;
+      payload.assigned_name = PROFILE.name || "";
     }
     let error, data;
     if (id) ({ data, error } = await sb.from("deals").update(payload).eq("id", id).select("id"));

@@ -132,6 +132,11 @@
                 <div class="field"><label for="f-zona">Zona</label><select id="f-zona" disabled></select>
                   <span class="field-hint" id="zonaHint">Se hereda de tu zona asignada.</span>
                 </div>
+                <div class="field"><label for="f-sector">Sector</label><select id="f-sector"></select>
+                  <span class="field-hint">Rubro al que pertenece la marca.</span>
+                </div>
+              </div>
+              <div class="grid-2">
                 <div class="field"><label for="f-prosp-via">¿Dónde la identificaste?</label>
                   <select id="f-prosp-via">
                     <option value="">— Elegir vía —</option>
@@ -143,6 +148,14 @@
                     <option>Otro</option>
                   </select>
                   <span class="field-hint">Acción BTL donde la viste.</span>
+                </div>
+                <div class="field"><label for="f-invierte">¿Invierte actualmente en patrocinios?</label>
+                  <select id="f-invierte">
+                    <option value="">— Sin definir —</option>
+                    <option value="si">Sí</option>
+                    <option value="no">No</option>
+                  </select>
+                  <span class="field-hint">Si la marca ya patrocina hoy.</span>
                 </div>
               </div>
             </section>
@@ -157,6 +170,11 @@
               <div class="grid-2">
                 <div class="field"><label for="f-email">Email</label><input type="email" id="f-email" placeholder="nombre@empresa.com" autocomplete="off" /></div>
                 <div class="field"><label for="f-phone">Teléfono</label><input type="text" id="f-phone" placeholder="+58 412 000 0000" autocomplete="off" /></div>
+              </div>
+              <div class="field" id="assignWrap" hidden>
+                <label for="f-assigned">Vendedor asignado</label>
+                <select id="f-assigned"><option value="">— Sin asignar —</option></select>
+                <span class="field-hint">El vendedor asignado es quien trabaja la marca; solo él (además de admin y comercial) puede editarla.</span>
               </div>
               <div class="field"><label for="f-notes">Notas</label><textarea id="f-notes" rows="3" placeholder="Cualquier detalle útil sobre la marca o el contacto..."></textarea></div>
             </section>

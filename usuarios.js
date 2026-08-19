@@ -38,7 +38,7 @@
     const { data } = await sb.from("profiles").select("id,name,role").eq("id", user.id).maybeSingle();
     PROFILE = data || { id: user.id, name: (user.email || "").split("@")[0], role: "comercial" };
     const tag = $("userTag");
-    const rol = PROFILE.role === "admin" ? "Admin" : "Comercial";
+    const rol = PROFILE.role === "admin" ? "Admin" : PROFILE.role === "vendedor" ? "Vendedor" : "Comercial";
     tag.textContent = "● " + (PROFILE.name || user.email) + " · " + rol;
     tag.className = "admin-mode-tag" + (PROFILE.role === "admin" ? " cloud" : "");
 
@@ -73,7 +73,8 @@
         <td><strong>${esc(p.name || "—")}</strong>${you}</td>
         <td>${esc(p.email)}</td>
         <td><select class="u-role" data-uid="${p.id}">
-          <option value="comercial"${p.role !== "admin" ? " selected" : ""}>Comercial</option>
+          <option value="comercial"${p.role === "comercial" ? " selected" : ""}>Comercial</option>
+          <option value="vendedor"${p.role === "vendedor" ? " selected" : ""}>Vendedor</option>
           <option value="admin"${p.role === "admin" ? " selected" : ""}>Admin</option>
         </select></td>
         <td><select class="u-zona" data-uid="${p.id}">${zonaOptions(p.zona || "")}</select></td>
