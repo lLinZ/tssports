@@ -21,6 +21,22 @@
      Valor:        100% del valor de la propuesta pasada. ▼▼▼ */
   const ZONAS = ["Caracas", "Centro", "Lara", "Andes-Zulia", "Oriente"];
   const SECTORES = ["Alimentos", "Bebidas", "Telecomunicaciones", "Banca y finanzas", "Retail", "Automotriz", "Tecnología", "Salud", "Educación", "Deportes", "Entretenimiento", "Otro"];
+  /* CAMPAÑAS: la acción comercial con la que se está trabajando la marca.
+     Se guardan como texto en deals.campana (ver supabase-campanas.sql).
+     Para añadir una campaña nueva basta con escribirla en esta lista:
+     el selector de la ficha y el filtro del tablero se pueblan solos.
+     Ojo: si se RENOMBRA una, las marcas que ya la tenían conservan el
+     nombre viejo y quedarían fuera del filtro. En ese caso hay que
+     actualizarlas antes con:
+       update public.deals set campana = 'Nombre nuevo'
+        where campana = 'Nombre viejo'; */
+  const CAMPANAS = [
+    "Visita presencial",
+    "Envió material pop",
+    "Invitación a nuestros medios",
+    "Invitación a evento enamorados del marketing deportivo",
+    "Invitación a evento Sportbiz"
+  ];
   const FASE_COLORS = { aprox: "#3b82f6", prosp: "#f59e0b", prop: "#16c79a" };
   /* ▲▲▲ ▲▲▲ */
 
@@ -81,11 +97,36 @@
   const roleLabel = (r) => r === "admin" ? "Admin" : r === "vendedor" ? "Vendedor" : "Comercial";
   const canAssign = () => PROFILE && (PROFILE.role === "admin" || PROFILE.role === "comercial");
 
+  /* Rellena el selector de campaña de la ficha desde cero.
+     Se reconstruye entero en cada apertura (y no se le van añadiendo
+     opciones) para que abrir varias marcas seguidas no acumule
+     duplicados en la lista.
+     Si la marca trae una campaña que ya no está en CAMPANAS —porque se
+     renombró la lista después—, se añade igualmente marcada como fuera
+     de lista: si no, el select saldría en blanco y al guardar la
+     borraríamos sin que nadie se entere. */
+  function poblarSelectDeCampana(campanaDeLaMarca) {
+    const opciones = CAMPANAS.slice();
+    if (campanaDeLaMarca && !opciones.includes(campanaDeLaMarca)) opciones.push(campanaDeLaMarca);
+    $("f-campana").innerHTML = `<option value="">— Sin campaña —</option>` +
+      opciones.map((c) => {
+        const fueraDeLista = !CAMPANAS.includes(c);
+        return `<option value="${esc(c)}">${esc(c)}${fueraDeLista ? " (fuera de la lista)" : ""}</option>`;
+      }).join("");
+    $("f-campana").value = campanaDeLaMarca || "";
+  }
+
   /* ---------- Auth ---------- */
   async function boot() {
     // Zonas y sectores en los selects del modal (el filtro fZona se llena al saber el rol)
     $("f-zona").innerHTML = `<option value="">Sin zona</option>` + ZONAS.map((z) => `<option value="${z}">${z}</option>`).join("");
     $("f-sector").innerHTML = `<option value="">— Elegir sector —</option>` + SECTORES.map((s) => `<option value="${s}">${s}</option>`).join("");
+    // Campaña: el selector de la ficha y el filtro del tablero salen de
+    // la misma lista, así que nunca pueden discrepar.
+    poblarSelectDeCampana("");
+    $("fCampana").innerHTML = `<option value="">Todas las campañas</option>` +
+      CAMPANAS.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("") +
+      `<option value="__sin">Sin campaña</option>`;
 
     if (!HAS_CLOUD) {
       $("loginMode").textContent = "Supabase no está configurado (config.js). El CRM necesita la nube para funcionar.";
@@ -241,10 +282,14 @@
     const sort = $("fSort").value;
     const zona = $("fZona") ? $("fZona").value : "";
     const agent = $("fAgent") ? $("fAgent").value : "";
+    const campana = $("fCampana") ? $("fCampana").value : "";
     let items = DEALS.slice();
     if (q) items = items.filter((d) => (d.brand || "").toLowerCase().includes(q) || (d.contact || "").toLowerCase().includes(q));
     if (av) items = items.filter((d) => avanceKey(d) === av);
     if (zona) items = items.filter((d) => zona === "__sin" ? !d.zona : d.zona === zona);
+    // "__sin" trae las marcas que todavía no se han trabajado con
+    // ninguna campaña, que es justo la lista de lo que queda por hacer.
+    if (campana) items = items.filter((d) => campana === "__sin" ? !d.campana : d.campana === campana);
     if (agent) items = items.filter((d) => d.owner === agent);
     items.sort((a, b) => {
       if (sort === "value-desc") return (b.value || 0) - (a.value || 0);
@@ -277,11 +322,15 @@
       ? badge(d.assigned_name, "assigned")
       : (PROFILE && PROFILE.role === "admin" && d.owner_name ? badge(d.owner_name + (d.zona ? " · " + d.zona : "")) : "");
     const sector = d.sector ? `<span class="brand-sector">${esc(d.sector)}</span>` : "";
+    // La campaña se ve en la tarjeta: sin esto, al filtrar por campaña no
+    // habría forma de saber por qué está ahí cada marca.
+    const campana = d.campana ? `<span class="brand-campana">${esc(d.campana)}</span>` : "";
     return `<article class="brand-card" data-id="${d.id}">
       ${src}
       <div class="brand-logo">${logo}</div>
       <div class="brand-name">${esc(d.brand) || "(sin nombre)"}</div>
       ${sector}
+      ${campana}
       <div class="brand-stages">${chips}</div>
       <div class="brand-foot">
         <span class="brand-value">${(d.st_propuesta && d.value) ? money(d.value) + " /año" : "—"}</span>
@@ -329,6 +378,7 @@
   $("fSearch").addEventListener("input", renderGrid);
   $("fAvance").addEventListener("change", renderGrid);
   $("fSort").addEventListener("change", renderGrid);
+  if ($("fCampana")) $("fCampana").addEventListener("change", renderGrid);
   if ($("fZona")) $("fZona").addEventListener("change", renderGrid);
   if ($("fAgent")) $("fAgent").addEventListener("change", renderGrid);
 
@@ -432,6 +482,7 @@
     $("f-notes").value = deal.notes || "";
     $("f-sector").value = deal.sector || "";
     $("f-invierte").value = deal.invierte || "";
+    poblarSelectDeCampana(deal.campana || "");
     // Vendedor asignado: solo lo eligen admin y comercial. El vendedor no ve el campo.
     const asgWrap = $("assignWrap");
     if (asgWrap) {
@@ -582,6 +633,7 @@
       notes: $("f-notes").value.trim(),
       sector: $("f-sector").value,
       invierte: $("f-invierte").value,
+      campana: $("f-campana").value,
       updated_at: new Date().toISOString()
     };
     // Prospección = datos obligatorios completos (se guarda calculada)
